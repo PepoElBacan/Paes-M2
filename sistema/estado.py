@@ -19,13 +19,14 @@ def hoy():
 
 
 def vacio():
-    return {"version": 1, "temas": {}, "errores": {}, "ensayos": [], "hojas": {}}
+    return {"version": 1, "temas": {}, "errores": {}, "ensayos": [], "hojas": {}, "oficiales": {}, "sub": {}, "cartas": {}}
 
 
 def cargar():
-    if RUTA.exists():
-        return json.loads(RUTA.read_text())
-    return vacio()
+    est = json.loads(RUTA.read_text()) if RUTA.exists() else vacio()
+    for k, v in vacio().items():                  # estados antiguos: agrega lo que falte
+        est.setdefault(k, v)
+    return est
 
 
 def guardar(est):
@@ -48,6 +49,7 @@ def registrar_intento(est, qid, ok, fecha=None):
     e = est["errores"].setdefault(qid, {"racha": 0, "intentos": 0, "ultimo": None, "proximo": fecha.isoformat(), "dominada": False, "nota": ""})
     e["intentos"] += 1
     e["ultimo"] = fecha.isoformat()
+    est.setdefault("oficiales", {})[qid] = {"ok": bool(ok), "f": fecha.isoformat()}
     if ok:
         e["racha"] += 1
         if e["racha"] >= 3:
@@ -100,6 +102,9 @@ def registrar_practica(est, tema, ok):
     return subio
 
 
-def registrar_ensayo(est, prueba, correctas, puntuables, puntaje, por_tema, fecha=None):
-    est["ensayos"].append({"prueba": prueba, "fecha": (fecha or hoy()).isoformat(), "correctas": correctas,
-                           "puntuables": puntuables, "puntaje": puntaje, "por_tema": por_tema})
+def registrar_ensayo(est, prueba, correctas, puntuables, puntaje, por_tema, fecha=None, resp=None):
+    en = {"prueba": prueba, "fecha": (fecha or hoy()).isoformat(), "correctas": correctas,
+          "puntuables": puntuables, "puntaje": puntaje, "por_tema": por_tema}
+    if resp:
+        en["resp"] = {str(k): v for k, v in resp.items() if v}
+    est["ensayos"].append(en)

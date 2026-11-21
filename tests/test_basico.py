@@ -77,5 +77,37 @@ class TestRepeticionEspaciada(unittest.TestCase):
         self.assertEqual(est["temas"]["ALG-cua"]["nivel"], 2)
 
 
+class TestRefuerzo(unittest.TestCase):
+    def test_tarjeta_de_refuerzo(self):
+        from datetime import date, timedelta
+        from sistema import refuerzo as R
+        est = estado.vacio()
+        R.abrir_carta(est, "ALG-cua", "vertice-maximo", 2)
+        c = est["cartas"]["ALG-cua|vertice-maximo"]
+        self.assertEqual(c["proximo"], (estado.hoy() + timedelta(days=1)).isoformat())   # vuelve mañana
+        R.resolver_carta(est, "ALG-cua|vertice-maximo", True)
+        self.assertEqual(c["racha"], 1)
+        R.resolver_carta(est, "ALG-cua|vertice-maximo", True)
+        R.resolver_carta(est, "ALG-cua|vertice-maximo", True)
+        self.assertTrue(c["dominada"])                                                    # 3 seguidos
+        R.abrir_carta(est, "ALG-cua", "vertice-maximo", 1)                               # volver a fallar la reabre
+        self.assertFalse(c["dominada"])
+        self.assertEqual((c["racha"], c["nivel"]), (0, 1))
+
+    def test_subtemas_debiles_desde_tu_ensayo(self):
+        from sistema import refuerzo as R
+        est = estado.vacio()
+        estado.registrar_ensayo(est, "I2026", 31, 49, 640, {}, fecha=__import__("datetime").date(2026, 11, 14))
+        d = {x["k"]: x for x in R.debiles(est, banco.cargar(), {})}
+        v = d["ALG-cua|vertice-maximo"]            # P29, P30 y P31 de tu ensayo
+        self.assertEqual((v["err"], v["n"]), (3, 3))
+        self.assertTrue(v["gen"])
+
+    def test_cada_subtema_generado_existe(self):
+        from sistema import refuerzo as R
+        for tema, subs in R.subtemas_gen().items():
+            self.assertTrue(subs, tema)
+
+
 if __name__ == "__main__":
     unittest.main()

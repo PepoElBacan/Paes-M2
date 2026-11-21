@@ -3500,7 +3500,7 @@
   "prueba_etiqueta": "Invierno jun-2025 (Adm. 2026)",
   "n": 31,
   "tema": "ALG-cua",
-  "subtema": "discriminante-vieta",
+  "subtema": "vertice-maximo",
   "descripcion": "Cuadrante del vértice según sus raíces",
   "suficiencia": false,
   "clave": "D",

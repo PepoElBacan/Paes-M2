@@ -127,15 +127,16 @@ Para cada pregunta que fallaste (o acertaste sin método) en tu ensayo **I2026**
 | I2024 P28 | 22 | D | Temperatura máxima con parábola | vertice-maximo |
 
 ## I2026 P31 — Cuadrante del vértice según sus raíces
-*ALG-cua · discriminante-vieta · marcaste C, correcta D · tu nota: no supe*
+*ALG-cua · vertice-maximo · marcaste C, correcta D · tu nota: no supe*
 
 | Pregunta | pág. PDF | clave | de qué trata | subtema |
 |---|---|---|---|---|
-| I2025 P30 | 26 | C | Discriminante: intervalo de valores de b | discriminante-vieta |
-| R2024 P30 | 26 | A | Suma de inversos con raíces de 5x²-x-5=0 | discriminante-vieta |
-| I2024 P26 | 21 | A | Discriminante cero: única solución | discriminante-vieta |
-| I2024 P27 | 22 | B | Relaciones de Vieta (suma y producto de raíces) | discriminante-vieta |
-| I2024 P29 | 23 | D | Producto de raíces igual a un valor | discriminante-vieta |
+| I2027 P30 | 27 | D | Parábola con vértice en el origen | vertice-maximo |
+| I2027 P32 | 28 | B | Altura de una pelota lanzada | vertice-maximo |
+| I2025 P16 | 14 | A | Completar el cuadrado: hallar b | vertice-maximo |
+| I2025 P31 | 26 | C | Volumen de un pozo modelado con parábola | vertice-maximo |
+| I2024 P24 | 20 | C | Cultivo modelado con parábola *(piloto)* | vertice-maximo |
+| I2024 P28 | 22 | D | Temperatura máxima con parábola | vertice-maximo |
 
 ## I2026 P34 — Cuadrados concéntricos: razón de áreas (piloto: no puntúa)
 *GEO-area · areas-figuras · marcaste B, correcta D · tu nota: piloto*

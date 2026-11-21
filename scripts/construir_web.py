@@ -7,6 +7,7 @@
 
 La página (web/index.html) se publica junto a estos archivos.
 """
+import csv
 import html
 import json
 import random
@@ -25,6 +26,23 @@ from sistema.taxonomia import TEMAS  # noqa: E402
 
 WEB = RAIZ / "web"
 POR_NIVEL = 22     # ejercicios únicos por (generador, nivel)
+
+SUBNOMBRES = {
+    "vertice-maximo": "Vértice y valor máximo/mínimo", "reflexion-transformacion": "Reflexiones y traslaciones de la parábola",
+    "discriminante-vieta": "Discriminante y raíces (Vieta)", "grafico-coeficientes": "Coeficientes desde gráfico o tabla",
+    "modelar-ecuacion": "Plantear la ecuación cuadrática", "inversa": "Proporcionalidad inversa",
+    "directa-razones": "Proporcionalidad directa y razones", "condicional-tablas": "Probabilidad condicional y tablas",
+    "conteo-y-probabilidad": "Conteo y probabilidad con extracciones", "independencia-otros": "Independencia y otras probabilidades",
+    "propiedades-evaluar": "Propiedades y evaluación de logaritmos", "modelos-con-log": "Modelos con logaritmos",
+    "crecimiento-bacterias": "Crecimiento exponencial", "interes-compuesto": "Interés compuesto",
+    "sin-o-infinitas": "Sistemas sin solución o con infinitas", "plantear": "Plantear sistemas",
+    "porcentaje-precio": "Porcentajes y precios", "modelo-recta": "Modelos de recta", "hexagono": "Hexágono regular",
+    "circulos": "Círculos y circunferencia", "pitagoras-razones": "Pitágoras y razones",
+    "thales-semejanza": "Thales y semejanza", "homotecia": "Homotecia", "rotacion-reflexion-traslacion": "Rotación, reflexión y traslación",
+    "volumen-cuerpos": "Volumen de cuerpos", "areas-figuras": "Áreas de figuras", "desviacion-varianza": "Desviación estándar y varianza",
+    "cajon-posicion": "Diagramas de cajón y posición", "tablas-promedios": "Tablas y promedios",
+    "combinaciones": "Combinaciones y permutaciones", "principio-multiplicativo": "Principio multiplicativo", "general": "General",
+}
 
 PLAN_MOVIL = {
     "2026-11-21": ("Ensayo completo cronometrado",
@@ -182,7 +200,8 @@ def main():
         "temas": {k: {"n": v[0], "eje": v[1]} for k, v in TEMAS.items()},
         "gens": sorted(G.GENERADORES), "modulos": modulos, "semilla": semilla,
         "plan": {k: {"t": v[0], "d": v[1]} for k, v in PLAN_MOVIL.items()},
-        "paes": "2026-11-30T15:00:00",
+        "paes": "2026-11-30T15:00:00", "subn": SUBNOMBRES,
+        "ens_sem": {"I2026": {r["n"]: r["marcada"] for r in csv.DictReader(open(RAIZ / "datos" / "respuestas_ensayo_I2026.csv"))}},
     }
     (WEB / "datos.json").write_text(json.dumps(datos, ensure_ascii=False, separators=(",", ":")))
 

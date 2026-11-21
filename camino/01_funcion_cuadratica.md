@@ -63,7 +63,7 @@ python3 paes.py gemelas I2026-31                  # preguntas oficiales parecida
 | I2026 P28 | 22 | A | Coeficiente b desde el gráfico | grafico-coeficientes |
 | I2026 P29 | 23 | C | Coordenada y del vértice | vertice-maximo |
 | I2026 P30 | 24 | A | Altura máxima de un cohete | vertice-maximo |
-| I2026 P31 | 24 | D | Cuadrante del vértice según sus raíces | discriminante-vieta |
+| I2026 P31 | 24 | D | Cuadrante del vértice según sus raíces | vertice-maximo |
 | R2025 P26 | 13 | D | Transformar f(x)=x²-4x+5 (desplazamientos) | reflexion-transformacion |
 | R2025 P27 | 14 | D | Cuadro con margen uniforme: ecuación cuadrática | modelar-ecuacion |
 | R2025 P28 | 15 | A | Afirmaciones sobre f(x)=ax²+bx+c | grafico-coeficientes |

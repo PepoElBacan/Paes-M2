@@ -12,6 +12,7 @@ from pathlib import Path
 from . import banco as B
 from . import camino as C
 from . import estado as E
+from . import refuerzo as R
 from . import generadores as G
 from .taxonomia import TEMAS, nombre
 
@@ -134,7 +135,14 @@ def cmd_estado(args):
         te = f["estado"]
         pr = f"niv{te['nivel']} {te['aciertos']}/{te['intentos']}" + ("★" if te["dominado"] else "") if te else "—"
         print(f"  {f['tema']:9} {nombre(f['tema'])[:44]:44} {fmt_pct(f['peso']):>5} {f['ens']:>8} {pr:>14} {f['en_juego']:>9.1f}")
-    print("\n  Siguiente paso: python3 paes.py hoy\n")
+    deb = [d for d in R.debiles(est, banco, tasas_tema(est, banco)) if d["n"]][:6]
+    print("\n  Subtemas más débiles (preguntas que se esperan perder; evidencia de ensayos, oficiales y ejercicios)\n")
+    for d in deb:
+        print(f"  {d['tema']:9} {d['sub']:30} {d['err']} error(es) en {d['n']:<3} ~{d['en_juego']:.1f}" + ("" if d["gen"] else "   (solo preguntas oficiales)"))
+    cs = est["cartas"]
+    act = sum(1 for c in cs.values() if not c["dominada"])
+    print(f"\n  Tarjetas de refuerzo: {act} activas · {len(cs) - act} dominadas · vencen hoy: {len(R.cartas_pendientes(est))}")
+    print("\n  Siguiente paso: python3 paes.py hoy   (o python3 paes.py refuerzo)\n")
 
 
 # ───────────────────────── práctica interactiva ─────────────────────────
@@ -156,6 +164,28 @@ def corregir_ejercicio(ej, marcada):
             print(f"     Tu opción: {ej['opciones'][marcada][1]}")
     print(f"   Solución: {ej['explicacion']}")
     return ok
+
+
+def tasas_tema(est, banco):
+    return {f["tema"]: f["tasa_error"] for f in prioridades(est, banco)}
+
+
+def registrar_gen(est, ej, ok, carta=None):
+    """Registra un ejercicio generado: nivel del tema, subtema y, si falló, tarjeta de refuerzo."""
+    t, sb = ej["tema"], ej["subtema"]
+    subio = E.registrar_practica(est, t, ok)
+    R.reg_sub(est, t, sb, ok)
+    if carta:
+        c = R.resolver_carta(est, carta, ok)
+        if ok:
+            print("   ✓ ¡Subtema dominado! Sale de tu refuerzo." if c["dominada"] else f"   Racha {c['racha']}/3 · vuelve el {c['proximo']}")
+        else:
+            print(f"   Vuelve mañana ({c['proximo']}) con otro ejercicio de este subtema.")
+    elif not ok:
+        R.abrir_carta(est, t, sb, ej["nivel"])
+        print("   ↻ Mañana te pongo otro ejercicio de este subtema (refuerzo).")
+    if subio:
+        print(f"   ⬆ ¡Subes a nivel {E.tema_estado(est, t)['nivel']} en {t}!")
 
 
 def elegir_temas_prioritarios(est, banco, k=3):
@@ -188,8 +218,32 @@ def cmd_practicar(args):
         ok = corregir_ejercicio(ej, marcada)
         n += 1
         aciertos += ok
-        if E.registrar_practica(est, t, ok):
-            print(f"   ⬆ ¡Subes a nivel {E.tema_estado(est, t)['nivel']} en {t}!")
+        registrar_gen(est, ej, ok)
+        E.guardar(est)
+    if n:
+        print(f"\nResultado: {aciertos}/{n}")
+
+
+def cmd_refuerzo(args):
+    """Sesión de refuerzo: tarjetas vencidas + ejercicios de tus subtemas más débiles."""
+    est, banco = E.cargar(), B.cargar()
+    items = R.items_refuerzo(est, banco, tasas_tema(est, banco), args.n)
+    if not items:
+        print("Aún no hay datos para detectar puntos débiles. Haz un ensayo o practica un tema.")
+        return
+    print("Refuerzo (responde A-D; Enter = saltar; q = salir)")
+    aciertos = n = 0
+    for i, (t, sb, carta, nivel) in enumerate(items, start=1):
+        ej = G.ejercicio(t, nivel or E.tema_estado(est, t)["nivel"], subtema=sb)
+        mostrar_ejercicio(ej, f"{i}/{len(items)} " + ("(refuerzo de un error anterior) " if carta else ""))
+        r = leer("   Tu respuesta: ")
+        if r is None or r.lower() == "q":
+            break
+        marcada = LETRAS.index(r.upper()) if r.upper() in tuple(LETRAS) else None
+        ok = corregir_ejercicio(ej, marcada)
+        n += 1
+        aciertos += ok
+        registrar_gen(est, ej, ok, carta)
         E.guardar(est)
     if n:
         print(f"\nResultado: {aciertos}/{n}")
@@ -237,8 +291,7 @@ def cmd_corregir(args):
         ok = corregir_ejercicio(ej, marcada)
         ok_total += ok
         if not h["corregida"]:
-            if E.registrar_practica(est, it["tema"], ok):
-                print(f"   ⬆ ¡Subes a nivel {E.tema_estado(est, it['tema'])['nivel']} en {it['tema']}!")
+            registrar_gen(est, ej, ok)
     h["corregida"] = True
     E.guardar(est)
     print(f"\nResultado: {ok_total}/{len(h['items'])}")
@@ -262,12 +315,35 @@ def render_pagina(q):
 def cmd_repaso(args):
     est, banco = E.cargar(), B.cargar()
     ids = B.por_id(banco)
-    pend = E.pendientes(est)[: args.n]
-    if not pend:
+    of = [("of", q) for q in E.pendientes(est)]
+    ca = [("carta", k) for k in R.cartas_pendientes(est)]
+    cola = []
+    for i in range(max(len(of), len(ca))):          # intercala tarjetas de refuerzo y preguntas oficiales
+        if i < len(ca):
+            cola.append(ca[i])
+        if i < len(of):
+            cola.append(of[i])
+    cola = cola[: args.n]
+    if not cola:
         print("🎉 No tienes repasos pendientes hoy.")
         return
-    print(f"{len(pend)} repaso(s) pendiente(s). Abre el PDF en la página indicada, resuélvela SIN mirar la clave y escribe tu alternativa.\n")
-    for qid in pend:
+    print(f"{len(cola)} repaso(s): {sum(1 for t, _ in cola if t == 'of')} preguntas oficiales y "
+          f"{sum(1 for t, _ in cola if t == 'carta')} ejercicios de refuerzo.\n")
+    for tipo, x in cola:
+        if tipo == "carta":
+            c = est["cartas"][x]
+            ej = G.ejercicio(c["tema"], c["nivel"], subtema=c["sub"])
+            mostrar_ejercicio(ej, "(refuerzo de un error anterior) ")
+            r = leer("   Tu respuesta (A-D, Enter = saltar, q = salir): ")
+            if r is None or r.lower() == "q":
+                break
+            if not r:
+                continue
+            ok = corregir_ejercicio(ej, LETRAS.index(r.upper()) if r.upper() in tuple(LETRAS) else None)
+            registrar_gen(est, ej, ok, x)
+            E.guardar(est)
+            continue
+        qid = x
         q = ids[qid]
         e = est["errores"][qid]
         print(f"▶ {B.etiqueta(q)}  ({q['prueba_etiqueta']})  → {q['pdf']}  pág. {q['pagina_pdf']}")
@@ -362,7 +438,7 @@ def cmd_ensayo(args):
         print(f"  P{q['n']:<2} {mark:<12} clave {q['clave']}  {q['tema']:9} {q['descripcion']}" + ("  (piloto: no puntúa)" if q["piloto"] else ""))
         E.agregar_error(est, q["id"], "ensayo " + prueba, proximo=E.hoy() + timedelta(days=1))
     if not args.sin_guardar:
-        E.registrar_ensayo(est, prueba, correctas, punt, paes, por_tema)
+        E.registrar_ensayo(est, prueba, correctas, punt, paes, por_tema, resp=resp)
         E.guardar(est)
         print("\nGuardado. Revisa tus nuevas prioridades: python3 paes.py estado")
 
@@ -383,10 +459,16 @@ def cmd_hoy(args):
         print(f"Plan del día: {titulo}\n  {detalle}\n")
     pend = E.pendientes(est)
     ids = B.por_id(banco)
-    print(f"1) REPASO DE ERRORES ({len(pend)} pendientes): python3 paes.py repaso")
+    nca = len(R.cartas_pendientes(est))
+    print(f"1) REPASO ({len(pend)} preguntas oficiales + {nca} ejercicios de refuerzo): python3 paes.py repaso")
     for qid in pend[:5]:
         q = ids[qid]
         print(f"     · {B.etiqueta(q):10} {q['descripcion']}")
+    deb = [d for d in R.debiles(est, banco, tasas_tema(est, banco)) if d["gen"]][:3]
+    if deb:
+        print("\n   PUNTOS MÁS DÉBILES → python3 paes.py refuerzo")
+        for d in deb:
+            print(f"     · {d['tema']} {d['sub']} ({d['err']} error(es) en {d['n']})" if d["n"] else f"     · {d['tema']} {d['sub']} (sin datos aún)")
     pr = prioridades(est, banco)
     gen = [f for f in pr if f["tema"] in G.GENERADORES]
     top = gen[0]
@@ -455,6 +537,9 @@ def main(argv=None):
     p.add_argument("--nivel", type=int, choices=[1, 2, 3])
     p.add_argument("--subtema")
     p.set_defaults(f=cmd_practicar)
+    p = sub.add_parser("refuerzo", help="sesión con tus puntos más débiles (tarjetas vencidas + subtemas flojos)")
+    p.add_argument("-n", type=int, default=9)
+    p.set_defaults(f=cmd_refuerzo)
     p = sub.add_parser("hoja", help="genera una hoja de ejercicios para resolver en papel")
     p.add_argument("tema", nargs="?")
     p.add_argument("-n", type=int, default=8)

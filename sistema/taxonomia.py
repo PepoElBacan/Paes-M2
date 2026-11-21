@@ -36,7 +36,7 @@ TEMAS = {
 SUBTEMAS = {
     "ALG-cua": [
         ("reflexion-transformacion", r"reflexi|trasladada|transformar|desplaz|rotaci|tangente|variaci[oó]n de uno"),
-        ("discriminante-vieta", r"discriminante|[uú]nica soluci|vieta|raíces|producto de|suma de inversos|suma de"),
+        ("discriminante-vieta", r"discriminante|[uú]nica soluci|vieta|producto de|suma de inversos|suma de|raíces de"),
         ("grafico-coeficientes", r"gráfic|coeficiente|signos|tabla|propiedades|afirmaciones"),
         ("vertice-maximo", r"vértice|máxim|altura|cohete|pelota|temperatura|volumen|cultivo|pozo|origen|completar"),
         ("modelar-ecuacion", r"plantear|área|margen|isósceles|cuadro|suficiencia"),
