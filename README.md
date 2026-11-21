@@ -11,6 +11,11 @@ Sistema para prepararte para la **PAES de Competencia Matemática 2 (M2)** usand
 
 > Estado de tu desempeño (ensayo I2026): **31/49 puntuables ⇒ 640 pts**. Mayor pérdida: **función cuadrática (0/4)**, el tema más frecuente de la PAES M2. Detalle en [`docs/diagnostico.md`](docs/diagnostico.md).
 
+## App web para el celular
+
+`web/` contiene una página de una sola pantalla pensada para el teléfono: ejercicios con explicación de errores, repaso espaciado de tus errores oficiales, corrección de ensayos (con puntaje PAES) y las guías. Usa los mismos datos y las mismas reglas que la CLI.
+Se regenera con `python3 scripts/construir_web.py` (ejercicios, datos y guías) y se publica como Artifact de Claude: <https://claude.ai/artifact/AiFbSUCqFY84CtdCqDpGar>. Su progreso es independiente del de la CLI (`progreso/estado.json`).
+
 ## Inicio rápido
 
 Requisitos: Python 3.9+; para (re)extraer texto/imágenes de los PDF: `poppler-utils` (`pdftotext`, `pdftoppm`).
@@ -65,7 +70,8 @@ datos/                     # banco_oficial.json (tema/subtema/clave/página), ta
 progreso/estado.json       # tu progreso (errores, niveles, ensayos): versionable
 camino/                    # 10 módulos guiados (tablas de preguntas oficiales generadas automáticamente)
 docs/                      # diagnóstico, mapa de gemelas, plan, estrategia, fórmulas
-scripts/                   # descargar PDFs, extraer preguntas, construir datos, generar docs
+web/                       # app web móvil (index.html + datos generados)
+scripts/                   # descargar PDFs, extraer preguntas, construir datos, generar docs y la app web
 tests/                     # python3 -m unittest discover -s tests
 ```
 
