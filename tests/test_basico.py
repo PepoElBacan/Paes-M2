@@ -77,6 +77,16 @@ class TestRepeticionEspaciada(unittest.TestCase):
         self.assertEqual(est["temas"]["ALG-cua"]["nivel"], 2)
 
 
+class TestHistorial(unittest.TestCase):
+    def test_log_y_dias(self):
+        est = estado.vacio()
+        estado.log_resp(est, 0, "ALG-cua", "vertice-maximo", True)
+        estado.log_resp(est, 1, "ALG-cua", "vertice-maximo", False, conf=0, causa=1)
+        self.assertEqual(len(est["hist"]), 2)
+        self.assertEqual(list(est["dias"].values())[0], [2, 1])
+        self.assertEqual(est["hist"][1][5:], [0, 1])
+
+
 class TestRefuerzo(unittest.TestCase):
     def test_tarjeta_de_refuerzo(self):
         from datetime import date, timedelta

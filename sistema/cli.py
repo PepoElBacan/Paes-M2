@@ -175,6 +175,7 @@ def registrar_gen(est, ej, ok, carta=None):
     t, sb = ej["tema"], ej["subtema"]
     subio = E.registrar_practica(est, t, ok)
     R.reg_sub(est, t, sb, ok)
+    E.log_resp(est, 0, t, sb, ok)
     if carta:
         c = R.resolver_carta(est, carta, ok)
         if ok:
@@ -361,6 +362,7 @@ def cmd_repaso(args):
             continue
         ok = r.upper() == q["clave"]
         E.registrar_intento(est, qid, ok)
+        E.log_resp(est, 1, q["tema"], q["subtema"], ok)
         e = est["errores"][qid]
         if ok:
             print(f"   ✓ Correcto (racha {e['racha']}/3)" + (" · ¡DOMINADA!" if e["dominada"] else f" · próximo repaso: {e['proximo']}"))
@@ -484,6 +486,46 @@ def cmd_hoy(args):
     print()
 
 
+def cmd_fortalezas(args):
+    est, banco = E.cargar(), B.cargar()
+    deb = [d for d in R.debiles(est, banco, tasas_tema(est, banco)) if d["n"] >= 3]
+    fuertes = sorted((d for d in deb if d["err"] / d["n"] <= 0.25), key=lambda d: (d["err"] / d["n"], -d["n"]))
+    camino = [d for d in deb if 0.25 < d["err"] / d["n"] <= 0.5]
+    domE = sum(1 for e in est["errores"].values() if e["dominada"])
+    domC = sum(1 for c in est["cartas"].values() if c["dominada"])
+    print(f"\n  Dominados: {domE} preguntas oficiales · {domC} subtemas de refuerzo")
+    sin_err = [f for f in prioridades(est, banco) if f["ens"].split("/")[1] not in ("0",) and f["ens"].split("/")[0] == f["ens"].split("/")[1]
+               and int(f["ens"].split("/")[1]) >= 2]
+    if sin_err:
+        print("  Temas sin errores en tus ensayos: " + ", ".join(f"{f['tema']} {f['ens']}" for f in sin_err))
+    print("\n  Subtemas sólidos (≥ 75 % con 3 o más respuestas):")
+    for d in fuertes or []:
+        print(f"    ✓ {d['tema']:9} {d['sub']:30} {d['n'] - d['err']}/{d['n']}")
+    if not fuertes:
+        print("    (aún no hay evidencia suficiente: hacen falta 3 respuestas por subtema)")
+    if camino:
+        print("\n  En camino (50–75 %):")
+        for d in camino:
+            print(f"    · {d['tema']:9} {d['sub']:30} {d['n'] - d['err']}/{d['n']}")
+    print()
+
+
+def cmd_meta(args):
+    est = E.cargar()
+    tablas = json.loads((RAIZ / "datos" / "tabla_puntaje.json").read_text())
+    need = sorted(next((p for p in range(51) if t[str(p)] >= args.puntaje), 51) for t in tablas.values())
+    print(f"\n  {args.puntaje} puntos exigen ~{need[len(need) // 2]} de 50 correctas "
+          f"({need[0]}–{need[-1]} según la prueba; tablas oficiales de las 7 pruebas).")
+    ult = [e for e in est["ensayos"] if e.get("puntaje")]
+    if ult:
+        c = ult[-1]["correctas"]
+        falta = need[len(need) // 2] - c
+        print(f"  Tu último ensayo ({ult[-1]['prueba']}): {c} correctas · " + ("ya llegas a la meta." if falta <= 0 else f"te faltan ~{falta}."))
+    if args.puntaje >= 950:
+        print("  Con 49 o 50 de 50 se llega al 1000 en las pruebas recientes: casi cero errores (ver docs/investigacion.md).")
+    print()
+
+
 def cmd_camino(args):
     est, banco = E.cargar(), B.cargar()
     pr = {f["tema"]: f for f in prioridades(est, banco)} if est["ensayos"] else {}
@@ -540,6 +582,10 @@ def main(argv=None):
     p = sub.add_parser("refuerzo", help="sesión con tus puntos más débiles (tarjetas vencidas + subtemas flojos)")
     p.add_argument("-n", type=int, default=9)
     p.set_defaults(f=cmd_refuerzo)
+    sub.add_parser("fortalezas", help="lo que ya dominas (subtemas sólidos)").set_defaults(f=cmd_fortalezas)
+    p = sub.add_parser("meta", help="cuántas correctas exige un puntaje: meta 850")
+    p.add_argument("puntaje", type=int)
+    p.set_defaults(f=cmd_meta)
     p = sub.add_parser("hoja", help="genera una hoja de ejercicios para resolver en papel")
     p.add_argument("tema", nargs="?")
     p.add_argument("-n", type=int, default=8)

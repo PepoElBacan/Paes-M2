@@ -70,6 +70,7 @@ def inline(s):
             out.append("<code>" + html.escape(p[1:-1], quote=False) + "</code>")
             continue
         p = html.escape(p, quote=False)
+        p = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', p)
         p = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", p)
         p = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<em>\1</em>", p)
         out.append(p)
@@ -211,7 +212,8 @@ def main():
         guias[ruta.stem] = {"titulo": f"{m[0]} · {m[1]}", "html": md_a_html(limpiar_guia(ruta.read_text()))}
     for clave, archivo, titulo in (("formulas", "hoja_de_formulas.md", "Hoja de fórmulas"),
                                    ("estrategia", "estrategia_de_prueba.md", "Estrategia de prueba"),
-                                   ("diagnostico", "diagnostico.md", "Diagnóstico de tu ensayo")):
+                                   ("diagnostico", "diagnostico.md", "Diagnóstico de tu ensayo"),
+                                   ("investigacion", "investigacion.md", "Cómo estudiar: evidencia y meta")):
         txt = limpiar_guia((RAIZ / "docs" / archivo).read_text())
         guias[clave] = {"titulo": titulo, "html": md_a_html(txt)}
     (WEB / "guias.json").write_text(json.dumps(guias, ensure_ascii=False, separators=(",", ":")))

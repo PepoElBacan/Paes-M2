@@ -19,7 +19,7 @@ def hoy():
 
 
 def vacio():
-    return {"version": 1, "temas": {}, "errores": {}, "ensayos": [], "hojas": {}, "oficiales": {}, "sub": {}, "cartas": {}}
+    return {"version": 1, "temas": {}, "errores": {}, "ensayos": [], "hojas": {}, "oficiales": {}, "sub": {}, "cartas": {}, "hist": [], "dias": {}}
 
 
 def cargar():
@@ -108,3 +108,13 @@ def registrar_ensayo(est, prueba, correctas, puntuables, puntaje, por_tema, fech
     if resp:
         en["resp"] = {str(k): v for k, v in resp.items() if v}
     est["ensayos"].append(en)
+
+
+def log_resp(est, tipo, tema, sub, ok, conf=None, causa=None):
+    """Historial compacto: [fecha, tema, subtema, tipo(0 ejercicio, 1 oficial, 2 mini-ensayo), ok, confianza, causa]."""
+    f = hoy().isoformat()
+    est["hist"].append([f, tema, sub, tipo, int(bool(ok)), -1 if conf is None else conf, -1 if causa is None else causa])
+    est["hist"] = est["hist"][-1200:]
+    d = est["dias"].setdefault(f, [0, 0])
+    d[0] += 1
+    d[1] += int(bool(ok))

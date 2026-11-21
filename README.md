@@ -7,7 +7,9 @@ Sistema para prepararte para la **PAES de Competencia Matemática 2 (M2)** usand
 3. **Gemelas:** para cada pregunta que fallaste, las preguntas del mismo tema en las otras pruebas → `docs/mapa_gemelas.md`.
 4. **Ejercicios generados:** 37 generadores paramétricos (cada respuesta se calcula en código; cada opción incorrecta corresponde a un error típico y te lo explica).
 5. **Refuerzo de errores:** tus errores vuelven a +1, +3 y +7 días; con 3 aciertos seguidos quedan *dominados* (la misma regla de tu hoja). Vale para las preguntas oficiales **y** para los ejercicios generados: si fallas uno, su *subtema* vuelve mañana con otro ejercicio. El sistema además detecta tus **subtemas más débiles** (ensayos por pregunta + oficiales + ejercicios) y arma sesiones de refuerzo con ellos.
-6. **Camino guiado:** 10 módulos ordenados por impacto, con teoría esencial, tus errores y reglas → `camino/`.
+6. **Historial, fortalezas y evolución** (app web): cada respuesta queda registrada con su confianza (Seguro / Dudé / Adiviné) y la causa del error; pestañas *Fortalezas* (lo que ya dominas), *Evolución* (puntaje de ensayos y aciertos por día) e *Historial* (cómo fallas).
+7. **Técnicas con evidencia** (ver [`docs/investigacion.md`](docs/investigacion.md)): práctica con pruebas, repaso espaciado, sesiones intercaladas, mini-ensayo cronometrado, errores confiados y tarjeta de **meta de puntaje** (cuántas correctas exige cada puntaje; el 1000 exige 49–50 de 50).
+8. **Camino guiado:** 10 módulos ordenados por impacto, con teoría esencial, tus errores y reglas → `camino/`.
 
 > Estado de tu desempeño (ensayo I2026): **31/49 puntuables ⇒ 640 pts**. Mayor pérdida: **función cuadrática (0/4)**, el tema más frecuente de la PAES M2. Detalle en [`docs/diagnostico.md`](docs/diagnostico.md).
 
@@ -31,6 +33,8 @@ python3 paes.py hoy                 # ¿qué hago hoy?  (el progreso ya viene se
 | `python3 paes.py hoy` | plan del día: repasos pendientes + tema de mayor prioridad |
 | `python3 paes.py estado` | panel: puntaje de ensayos, repasos, y cuántas preguntas "se pierden" por tema |
 | `python3 paes.py repaso [--imagen]` | repaso del día: errores oficiales (PDF y página; corrige con la clave) + tarjetas de refuerzo de ejercicios |
+| `python3 paes.py fortalezas` | subtemas que ya dominas |
+| `python3 paes.py meta 900` | cuántas correctas exige un puntaje, según las tablas oficiales |
 | `python3 paes.py refuerzo` | sesión con tus puntos más débiles: tarjetas vencidas + ejercicios de tus subtemas flojos |
 | `python3 paes.py practicar ALG-cua -n 8` | ejercicios generados, interactivo; sube de nivel con 4/5 aciertos |
 | `python3 paes.py hoja ALG-cua -n 10 --nivel 2` | hoja para resolver **en papel** → `python3 paes.py corregir <id> 1A 2C …` |
