@@ -1,0 +1,55 @@
+1|NUM-real|Desigualdad verdadera con puntos en recta numérica
+2|ALG-exp|Colección de estampillas con variación repetida
+3|NUM-pot|Ordenar números con potencias y raíces
+4|NUM-real|Condiciones sobre enteros p y q
+5|NUM-pot|Ordenar potencias y raíces (p, q, s)
+6|NUM-log|Ubicar en recta suma de raíz, potencia y logaritmo
+7|NUM-log|Esperanza de vida vs PIB (modelo con log)
+8|ALG-expr|Simplificar expresión algebraica con fracciones
+9|NUM-pot|Racionalizar y simplificar raíces
+10|NUM-log|Propiedades: log 5 a partir de log 2
+11|NUM-log|Evaluar log de producto/cociente
+12|ALG-exp|Bacterias que duplican cada hora (gráfico)
+13|ALG-exp|Depósito a plazo renovable, interés compuesto
+14|NUM-por|Porcentaje que falta para completar estanque
+15|ALG-expr|Factorizar diferencia de cuadrados 25x²-y²
+16|ALG-cua|Completar el cuadrado: hallar b
+17|ALG-lin|Peso corregido en función del peso real
+18|ALG-prop|Distancia, tiempo y rapidez por tramos
+19|ALG-ecu|Rangos de temperatura como intervalos
+20|ALG-ecu|Operaciones con intervalos de p y b
+21|ALG-ecu|Inecuación con raíz: conjunto solución
+22|ALG-lin|Gráfico de f(x)=2x+c (eliminada)
+23|NUM-por|Mezclas con porcentajes de agua y endulzante
+24|ALG-sis|Sistema con infinitas soluciones y parámetros
+25|ALG-lin|Intersección de dos rectas f y g
+26|ALG-lin|Nivel de agua nt = at + b
+27|ALG-prop|Densidad = masa/volumen
+28|ALG-func|Presión dinámica q = ½AV²: variación
+29|ALG-cua|Leer coeficientes desde gráfica cuadrática
+30|ALG-cua|Discriminante: intervalo de valores de b
+31|ALG-cua|Volumen de un pozo modelado con parábola
+32|ALG-func|Teoría del consumidor: modelar función
+33|GEO-sem|Homotecia en un lente: razón de ampliación
+34|GEO-iso|Homotecia de una circunferencia
+35|GEO-circ|Área de hexágono regular desde su perímetro
+36|GEO-vec|Rotación de un vector en 60°
+37|GEO-area|Volumen de perfil de aluminio
+38|GEO-sem|Pitágoras: escalera apoyada en pared
+39|GEO-iso|Traslación y reflexión de figura
+40|GEO-iso|Reflexión respecto a recta vertical
+41|GEO-trig|Escalera de 3 m con ángulo de 37°
+42|PYE-dis|Datos atípicos con cuartiles
+43|PYE-dis|Diagramas de cajón de dos grupos
+44|PYE-dis|Tabla de glucemia: frecuencias
+45|PYE-dis|Coeficiente de variación
+46|PYE-con|Comité: elegir cargos de un grupo (permutación)
+47|PYE-con|Torneo todos contra todos: combinaciones
+48|PYE-con|Directiva de tres cargos con restricción
+49|PYE-pro|Robot con giro aleatorio
+50|PYE-pro|Dos cajas con bolitas
+51|ALG-exp|Suficiencia de datos: crecimiento 10% anual
+52|ALG-cua|Suficiencia de datos: coeficientes de cuadrática
+53|GEO-sem|Suficiencia de datos: perímetro de trapecio
+54|ALG-func|Tiempo de vaciado de un cilindro (raíz)
+55|PYE-pro|Probabilidad condicional con fracciones

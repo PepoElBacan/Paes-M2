@@ -1,0 +1,55 @@
+1|NUM-pot|Operar con potencias de 10 y despejar el exponente
+2|NUM-real|Truncar decimales de un número (función)
+3|GEO-area|Igualar áreas de círculo, cuadrado y triángulo
+4|NUM-real|Operaciones entre irracionales y racionales
+5|NUM-por|Variación porcentual del área de un rectángulo
+6|NUM-pot|Media geométrica con raíz quinta
+7|GEO-area|Volumen de esferas y relación entre radios
+8|NUM-pot|Simplificar raíces con variable
+9|NUM-log|Evaluar log3 9 + log8 2
+10|ALG-exp|Bacterias que se triplican por día
+11|NUM-log|Propiedades: log de cociente
+12|NUM-log|Decibelios, fórmula con logaritmo
+13|NUM-log|Log en distinta base con dato log_m p
+14|ALG-ecu|Intervalo de valores a partir de desigualdades
+15|ALG-prop|Relación de proporcionalidad en el ojo humano
+16|ALG-ecu|Condición para solución positiva de ecuación literal
+17|ALG-sis|Sistema con infinitas soluciones (hallar p y q)
+18|ALG-ecu|Plantear ecuaciones: huevos y bandejas
+19|ALG-sis|Ecuación que forma sistema sin solución
+20|ALG-lin|k para que recta forme región de área dada
+21|ALG-lin|Dos autos con rapidez constante (modelo lineal)
+22|ALG-lin|Función de consumo bencina por litro
+23|ALG-cua|Plantear ecuación cuadrática: área del triángulo
+24|ALG-cua|Cultivo modelado con parábola
+25|ALG-cua|Función cuadrática desde tabla de puntos
+26|ALG-cua|Discriminante cero: única solución
+27|ALG-cua|Relaciones de Vieta (suma y producto de raíces)
+28|ALG-cua|Temperatura máxima con parábola
+29|ALG-cua|Producto de raíces igual a un valor
+30|ALG-cua|Parábola con f(p)=0, relación entre coeficientes
+31|ALG-cua|Recorrido de f(x)=bx²-4
+32|GEO-sem|Teorema de Thales con paralelas
+33|GEO-sem|Thales en triángulo con DE paralela a BC
+34|GEO-sem|Triángulos semejantes rectángulo 9-12-15
+35|GEO-sem|Rectángulos semejantes y área
+36|GEO-area|Variación del área total de un prisma
+37|GEO-iso|Homotecia: sombra proyectada
+38|GEO-iso|Homotecia con centro (1,-1) y razón -2
+39|GEO-iso|Homotecia de cuadrado: relación de áreas
+40|GEO-vec|Combinación de vectores u y v
+41|GEO-area|Volumen de mancuerna (cilindros)
+42|GEO-trig|Razones trigonométricas con tabla
+43|PYE-dis|Medidas de posición con tabla de puntajes
+44|PYE-dis|Desviación estándar con rango cero
+45|PYE-pro|Probabilidad con cartas de 4 tipos
+46|PYE-pro|Probabilidad con dos urnas
+47|PYE-con|Principio multiplicativo: claves de candado
+48|PYE-pro|Probabilidad condicional (productos devueltos)
+49|PYE-con|Contar números de 3 cifras múltiplos de 5
+50|PYE-con|Combinaciones: grupos de 2 dulces
+51|PYE-pro|Cartas boca abajo y permutaciones
+52|ALG-expr|Suficiencia de datos con racionales a,b,c
+53|ALG-sis|Suficiencia de datos: precios de relojes y novelas
+54|PYE-dis|Suficiencia de datos: percentiles / tramos
+55|PYE-con|Comisión de debate (hombres y mujeres)

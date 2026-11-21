@@ -1,0 +1,286 @@
+{
+ "ensayos": [
+  {
+   "correctas": 31,
+   "fecha": "2026-11-14",
+   "por_tema": {
+    "ALG-cua": [
+     0,
+     4
+    ],
+    "ALG-ecu": [
+     3,
+     3
+    ],
+    "ALG-exp": [
+     1,
+     2
+    ],
+    "ALG-expr": [
+     1,
+     2
+    ],
+    "ALG-func": [
+     2,
+     2
+    ],
+    "ALG-lin": [
+     1,
+     2
+    ],
+    "ALG-prop": [
+     3,
+     5
+    ],
+    "ALG-sis": [
+     0,
+     1
+    ],
+    "GEO-circ": [
+     0,
+     1
+    ],
+    "GEO-iso": [
+     2,
+     3
+    ],
+    "GEO-sem": [
+     2,
+     3
+    ],
+    "GEO-trig": [
+     1,
+     1
+    ],
+    "GEO-vec": [
+     0,
+     1
+    ],
+    "NUM-log": [
+     2,
+     3
+    ],
+    "NUM-por": [
+     4,
+     4
+    ],
+    "NUM-pot": [
+     3,
+     3
+    ],
+    "NUM-real": [
+     2,
+     2
+    ],
+    "PYE-dis": [
+     2,
+     3
+    ],
+    "PYE-pro": [
+     2,
+     4
+    ]
+   },
+   "prueba": "I2026",
+   "puntaje": 640,
+   "puntuables": 49
+  }
+ ],
+ "errores": {
+  "I2026-10": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-11": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-16": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-17": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-18": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-25": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-26": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-27": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-28": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 1,
+   "ultimo": "2026-11-18"
+  },
+  "I2026-29": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 1,
+   "ultimo": "2026-11-18"
+  },
+  "I2026-30": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 1,
+   "ultimo": "2026-11-18"
+  },
+  "I2026-31": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-34": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-35": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-37": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-41": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-42": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "acertada sin método: repasar igual",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-46": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-47": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-48": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-50": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "no supe resolverla",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-52": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "acertada sin método: repasar igual",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-53": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2026-55": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "",
+   "proximo": "2026-11-21",
+   "racha": 0,
+   "ultimo": null
+  }
+ },
+ "hojas": {},
+ "temas": {},
+ "version": 1
+}

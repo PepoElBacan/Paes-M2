@@ -1,0 +1,55 @@
+1|NUM-real|Racional entre dos fracciones (distancias)
+2|ALG-prop|Rendimiento de pintura y capas (regla de tres)
+3|NUM-real|RUT y dígito verificador
+4|NUM-por|Si el 25% de M es N, qué % de N es M
+5|NUM-por|Aumento porcentual sucesivo
+6|NUM-por|Variación porcentual diaria de búsquedas
+7|NUM-por|Avance de obra con porcentajes
+8|NUM-pot|Notación científica: masa de partículas
+9|NUM-pot|Error en procedimiento con raíces
+10|NUM-log|Aproximar log2 15 con log 2 y log 3
+11|ALG-exp|Cultivos de bacterias que se duplican
+12|NUM-log|Intensidad sonora en dB (log)
+13|NUM-pot|Expresión equivalente con potencias de 6
+14|ALG-exp|Interés compuesto mensual 1,5%
+15|ALG-expr|Productos notables (3a+...)²
+16|GEO-sem|Razón 16:9, diagonal y pulgadas (Pitágoras)
+17|ALG-prop|Gráfico de proporcionalidad inversa y directa
+18|ALG-prop|Gas: volumen y presión inversamente proporcionales
+19|ALG-prop|Densidad ρ=m/V
+20|ALG-ecu|Inecuación lineal con gráfico del conjunto solución
+21|ALG-ecu|Plantear inecuación: costo fijo y utilidad
+22|ALG-ecu|Inecuación de utilidad (ver PDF)
+23|ALG-lin|Relación lineal Celsius-Fahrenheit
+24|ALG-prop|Rapidez media en dos tramos iguales
+25|ALG-sis|Sistema 2x2: monedas de $500 y $100
+26|ALG-lin|Modelar precio con % de ganancia
+27|ALG-cua|Reflexión de una parábola respecto al eje X
+28|ALG-cua|Coeficiente b desde el gráfico
+29|ALG-cua|Coordenada y del vértice
+30|ALG-cua|Altura máxima de un cohete
+31|ALG-cua|Cuadrante del vértice según sus raíces
+32|ALG-func|Ley de Stefan (σT⁴): efecto de duplicar T
+33|GEO-sem|Altura sobre la hipotenusa en triángulo rectángulo
+34|GEO-area|Cuadrados concéntricos: razón de áreas
+35|GEO-circ|Hexágono regular inscrito en círculo: área
+36|GEO-area|Cubos de hielo y volumen (eliminada)
+37|GEO-vec|Operaciones con vectores en gráfico
+38|GEO-iso|Planeta y luna: traslación/rotación
+39|GEO-iso|Homotecia de razón negativa con centro en origen
+40|GEO-sem|Diámetro del sol por semejanza
+41|GEO-iso|Rotación de un cuadrado + razones trigonométricas
+42|GEO-trig|Refracción: sen(2θ)
+43|PYE-dis|Histograma de horas de estudio
+44|ALG-func|Nota en función del puntaje (por tramos)
+45|PYE-dis|Diagramas de cajón de tres grupos
+46|PYE-dis|Desviación estándar con datos desconocidos
+47|PYE-pro|Secuencia de figuras: patrón y probabilidad
+48|PYE-pro|Permutaciones: probabilidad par-par
+49|PYE-pro|Lotería con tres números del 1 al 99
+50|PYE-pro|Probabilidad condicional con dos sabores de helado
+51|PYE-pro|Tabla hombres/mujeres: piercing y tatuaje
+52|NUM-log|Suficiencia de datos: logaritmos
+53|ALG-expr|Suficiencia de datos: productos notables
+54|GEO-area|Suficiencia de datos: superficie de un cofre
+55|PYE-pro|Suficiencia de datos: prob. condicional sin reposición

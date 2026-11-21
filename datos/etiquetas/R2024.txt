@@ -1,0 +1,55 @@
+1|NUM-real|Categorías por intervalos (colesterol)
+2|NUM-real|(n+1)/(n-1) entero: valores de n
+3|GEO-area|Cuadrados A y B: relación de lados y áreas
+4|NUM-por|Porcentajes en composición del cuerpo
+5|NUM-pot|Potencias (aprox., ver PDF)
+6|NUM-pot|Potencias de igual base
+7|NUM-pot|Potencias/raíces con a y b
+8|NUM-pot|Evaluar 6^4·3^5 con potencias
+9|NUM-pot|Operar con potencias y raíces
+10|ALG-expr|Desarrollar 5x(2x-y)
+11|GEO-area|Triángulo equilátero vs cuadrado (áreas)
+12|NUM-log|Usar tabla de log para calcular otro log
+13|NUM-log|Log con base p y condición log_p b = c
+14|ALG-exp|Bacterias que se triplican cada 10 días
+15|NUM-pot|Factorizar potencias: 7^46 - 7^44
+16|ALG-exp|Interés compuesto trimestral
+17|NUM-por|Sueldo líquido y descuentos porcentuales
+18|ALG-expr|Expresión de áreas de cuadrados
+19|ALG-lin|Gráfica lineal profundidad-presión
+20|ALG-prop|Reconocer tabla inversamente proporcional
+21|ALG-prop|Proporciones en compuesto (sacarosa)
+22|ALG-lin|Conversión entre escalas de temperatura (gráfico)
+23|ALG-ecu|Inecuación con parámetro m y conjunto solución
+24|ALG-prop|Rapidez de computadores (razón)
+25|ALG-sis|Plantear sistema: adultos y niños al cine
+26|ALG-ecu|Identidad polinomial: hallar p y q
+27|ALG-sis|Sistema sin solución con parámetro k
+28|ALG-sis|Sistema infinitas/única solución según a
+29|ALG-lin|Nivel de agua modelado por recta
+30|ALG-cua|Suma de inversos con raíces de 5x²-x-5=0
+31|ALG-func|Volumen de cubos como función de x
+32|ALG-cua|Triángulo isósceles: plantear ecuación cuadrática
+33|ALG-cua|Parábola trasladada: vértice
+34|ALG-lin|Estanque que pierde agua (función afín)
+35|GEO-area|Superficie triangular a pintar (proporciones)
+36|GEO-iso|Homotecia del cuadrado ABCD
+37|GEO-area|Volumen de un cilindro (arteria)
+38|GEO-vec|Vector en 2º cuadrante: signos de coordenadas
+39|GEO-iso|Traslación y luego rotación de 90°
+40|GEO-vec|Nutria cruzando río: suma de vectores
+41|GEO-vec|Suma de vectores y cuadrante de w
+42|GEO-coor|Área de triángulo con vértices en coordenadas
+43|GEO-circ|Triángulo rectángulo inscrito en circunferencia
+44|PYE-dis|Gráfico lluvia: días y milímetros
+45|PYE-dis|Comparar resultados en dos grupos
+46|PYE-dis|Tablas de frecuencias de edades
+47|PYE-dis|Tabla de estudiantes y promedios
+48|PYE-pro|Naipe de 40 cartas
+49|PYE-pro|Sucesos independientes
+50|PYE-pro|4 bolitas sin reposición
+51|PYE-pro|Rifa de dos premios
+52|ALG-cua|Suficiencia de datos: f(x)=ax²+3x+c
+53|GEO-area|Suficiencia de datos: área de cuadrilátero
+54|PYE-dis|Suficiencia de datos: 50% con nota sobre 5,2
+55|PYE-dis|Suficiencia de datos: varianza de edades

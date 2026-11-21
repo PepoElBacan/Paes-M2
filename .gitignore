@@ -1,0 +1,5 @@
+# Material oficial de DEMRE (propiedad de la Universidad de Chile): se descarga con scripts/descargar_pruebas.sh
+pruebas/
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,36 @@
+1|ALG-prop|Máquina de acero: kg por pieza
+4|NUM-por|Reducción en fracción y barras de acero
+8|NUM-real|Fracciones y aproximación
+9|NUM-real|Restar la octava parte: ¿qué sumar?
+12|ALG-exp|Diámetro de un hongo en el tiempo
+14|ALG-exp|Cuentas de ahorro P y Q con interés compuesto
+15|NUM-pot|Expresión equivalente con exponentes fraccionarios
+16|ALG-expr|Tres rectángulos contiguos con alturas relacionadas
+17|ALG-prop|Densidad del hierro en dos estados
+18|ALG-prop|Calamar: rapidez inversa a la masa
+19|ALG-ecu|Inecuación con fracciones
+20|ALG-prop|Ciclo de Carnot: razones de calor
+21|ALG-prop|Ondas sísmicas S y P: distancia al epicentro
+22|ALG-ecu|Inecuación de presupuesto con descuento
+24|ALG-lin|Dos autos en sentidos opuestos
+26|GEO-area|Cuadrado inscrito en cuadrado: áreas
+27|ALG-cua|Gráfica de f(x)=ax²+bx+c: signos de coeficientes
+30|ALG-exp|Gráfica de f(x)=a·b^(x-2)
+31|ALG-exp|Intensidad de luz en una caverna
+32|ALG-func|Función 5·sen(x+π) evaluada
+34|GEO-area|Logo de rectángulo con secciones de color
+35|GEO-area|Volumen de prisma al variar dimensiones
+36|GEO-area|Estructura de dos prismas rectos
+37|GEO-vec|Hallar un vector con condición u-2v=(9,0)
+38|GEO-iso|Reflexión respecto al eje Y + traslación
+40|GEO-sem|Proyector: imagen proporcional por semejanza
+43|PYE-dis|Encuesta de mascotas (tabla/gráfico)
+44|PYE-dis|Dato perdido en tabla de edades
+47|PYE-pro|Encuesta de 3000 personas: probabilidad
+49|PYE-var|Pregunta de V/F al azar: binomial
+50|PYE-var|Distribución normal con media y desviación
+51|NUM-real|Suficiencia de datos: irracionales y (p+q)²
+52|ALG-exp|Suficiencia de datos: función exponencial bˣ
+53|GEO-area|Suficiencia de datos: suelo con alfombras
+54|GEO-circ|Suficiencia de datos: cuerdas de circunferencia
+55|PYE-dis|Suficiencia de datos: promedios y varianzas

@@ -1,0 +1,55 @@
+1|NUM-real|Enteros con restos 2 mod 5 y 4 mod 7
+2|ALG-prop|Reparto equitativo entre 13 asistentes
+3|ALG-expr|Dígitos decenas/unidades y decimal p,q
+4|NUM-por|Turistas extranjeros: variación porcentual
+5|NUM-por|Rebaja por error de p%
+6|NUM-por|Dos descuentos sucesivos del 20%
+7|NUM-por|Mezcla 80% agua: concentración
+8|NUM-por|Tabla de emisiones MP10: variaciones
+9|NUM-pot|Raíces de distinto índice
+10|GEO-area|Volumen de cubo al cuadruplicar la arista
+11|NUM-pot|Notación científica: viajes en bicicleta
+12|ALG-func|Función potencia y su linealización
+13|NUM-log|Decibeles con logaritmo
+14|ALG-exp|Cantidad de medicamento en el tiempo
+15|ALG-exp|Dos opciones de depósito con interés compuesto
+16|ALG-prop|Densidad y flotación
+17|ALG-exp|Triángulo de Sierpinski: sucesión y potencias
+18|ALG-func|Sucesión definida por tramos
+19|ALG-expr|Rectángulo de lados 4x(x+1) y 2x(x-1)
+20|ALG-prop|Tres llaves llenando un estanque (trabajo)
+21|ALG-prop|Vacaciones proporcionales
+22|ALG-sis|Condiciones para sistema con solución única
+23|ALG-sis|Queso y crema con litros de leche
+24|ALG-sis|20 prendas entre faldas y jeans
+25|ALG-lin|Costo de arriendo de vehículo (gráfico)
+26|ALG-lin|Oferta y demanda lineales
+27|ALG-func|Cobro de agua por tramos
+28|ALG-func|Rapidez de escape (raíz)
+29|ALG-cua|Parábola tangente al eje X: rotación y traslación
+30|ALG-cua|Parábola con vértice en el origen
+31|ALG-cua|Tablas de dos cuadráticas: parámetros h y k
+32|ALG-cua|Altura de una pelota lanzada
+33|ALG-func|Identificar función trigonométrica desde gráfico
+34|GEO-iso|Homotecia de triángulo con coordenadas
+35|GEO-iso|Homotecia H entre triángulos ABC y A'B'C'
+36|GEO-trig|Punto penal y ángulo de tiro al arco
+37|GEO-circ|Siete círculos concéntricos: suma de áreas
+38|GEO-circ|Vueltas a parque circular
+39|GEO-vec|Magnitud de suma de vectores v_n
+40|GEO-iso|Traslación y reflexión de un círculo
+41|GEO-trig|Funicular: pendiente y ángulo
+42|PYE-dis|Frecuencia acumulada: medidas
+43|PYE-dis|Promedio con nota pendiente
+44|PYE-dis|Coeficiente de dispersión por cuartiles
+45|PYE-dis|Diagrama de cajón de tiempos de reacción
+46|PYE-var|Estudio de gimnasios: muestreo/inferencia
+47|PYE-pro|Probabilidad geométrica con dardo
+48|PYE-pro|Probabilidad total: lluvia y atraso
+49|PYE-con|Comité de dos personas
+50|PYE-con|Fotografía en distintas poses (permutaciones)
+51|PYE-var|Extracción de ADN: éxito del proceso
+52|NUM-real|Suficiencia de datos: raíz n-ésima irracional
+53|GEO-sem|Suficiencia de datos: altura/semejanza
+54|GEO-area|Suficiencia de datos: red de paralelepípedo y cuerpo generado
+55|PYE-dis|Masas de 83 personas: datos parciales

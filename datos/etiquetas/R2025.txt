@@ -1,0 +1,38 @@
+1|NUM-real|Ordenar números dados por razones (0,92 y 1,125)
+2|NUM-pot|Potencias y raíces con m entero y x positivo
+3|GEO-area|Área de triángulo con semiperímetro (Herón)
+4|ALG-exp|Masa de cultivo bacteriano que se cuadruplica
+5|NUM-real|Expresión siempre mayor que 1 (a, b racionales)
+6|NUM-log|Log de producto con p=3^x y b=3^y
+9|NUM-real|Ordenar P, Q, R con raíces
+13|ALG-lin|Gráfico del precio de un producto
+14|ALG-prop|Herencia repartida en pagos mensuales iguales
+15|ALG-expr|Reducir expresión con productos notables
+18|ALG-ecu|Conjunto solución de inecuación lineal
+19|ALG-expr|Suma de edades con expresiones algebraicas
+20|ALG-func|Gravedad g = GM/R²: variación
+24|ALG-sis|Sistema: preguntas de 1, 2 y 3 puntos
+26|ALG-cua|Transformar f(x)=x²-4x+5 (desplazamientos)
+27|ALG-cua|Cuadro con margen uniforme: ecuación cuadrática
+28|ALG-cua|Afirmaciones sobre f(x)=ax²+bx+c
+30|ALG-cua|Propiedades del vértice y la gráfica
+31|ALG-func|Función cúbica: factorización y raíces
+32|GEO-iso|Homotecia centrada en origen aplicada a vector
+34|GEO-area|Volumen de cimientos de casas
+35|GEO-area|Área de un cuadrilátero
+36|GEO-area|Área de elipse πab
+37|GEO-sem|Dos barcos con rumbos perpendiculares (Pitágoras)
+39|GEO-area|Cilindro a cubo: volumen y área
+40|GEO-iso|Traslación según vector con parámetro k
+42|ALG-ecu|Proyecciones de ventas con condiciones
+43|PYE-dis|Diagrama de cajón con 100 datos
+45|PYE-pro|Rifa con 80 números
+47|PYE-pro|Dos personas al azar sin reposición
+48|PYE-pro|Cajas A y B con fichas
+49|PYE-con|Apretones de mano: combinaciones
+50|PYE-con|Trazos entre puntos de una circunferencia
+51|PYE-var|Test de verdadero/falso: binomial
+52|NUM-real|Suficiencia de datos con racionales x e y
+53|ALG-cua|Suficiencia de datos: f(13)=p, f(14)=q
+54|NUM-real|Aforo con aproximación a la unidad
+55|PYE-dis|Edades entre 60 y 90: medidas
