@@ -15,7 +15,7 @@ Sistema para prepararte para la **PAES de Competencia Matemática 2 (M2)** usand
 
 ## App web para el celular
 
-`web/` contiene una página de una sola pantalla pensada para el teléfono: ejercicios con explicación de errores, repaso espaciado de tus errores oficiales, corrección de ensayos (con puntaje PAES) y las guías. Usa los mismos datos y las mismas reglas que la CLI.
+`web/` contiene una página de una sola pantalla pensada para el teléfono: **lecciones interactivas** (idea, ejemplo paso a paso, ejercicio para probar, trampas que se voltean, tus errores) y **tarjetas de fórmulas** en la pestaña *Aprende*, ejercicios con explicación de errores, repaso espaciado de tus errores oficiales, corrección de ensayos (con puntaje PAES) y las guías. Usa los mismos datos y las mismas reglas que la CLI.
 Se regenera con `python3 scripts/construir_web.py` (ejercicios, datos y guías) y se publica como Artifact de Claude: <https://claude.ai/artifact/AiFbSUCqFY84CtdCqDpGar>. Su progreso es independiente del de la CLI (`progreso/estado.json`).
 
 ## Inicio rápido

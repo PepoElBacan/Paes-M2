@@ -2,107 +2,136 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Concepto: hoja de respuestas. Papel gris frío, grafito, burbujas como opciones, tinta azul para lo que se hace y rojo de corrección para lo que falla. */
+/* Concepto: hoja de respuestas. Papel gris frío, grafito, burbujas como opciones, tinta azul para lo que se hace, rojo de corrección para lo que falla y una regla (cinta de medir) como marca. */
 :root{
-  --bg:#F0F2F3; --surface:#FFFFFF; --ink:#1A1F23; --ink2:#59646B; --line:#D6DBDF;
-  --accent:#2A47C9; --accent-ink:#FFFFFF; --accent-soft:#E4E9FB;
-  --ok:#17744A; --ok-bg:#DFF1E7; --bad:#B3342A; --bad-bg:#F7E3E0; --warn:#8A5A00; --warn-bg:#F6EBD2;
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface2:#F5F7F9; --ink:#171C20; --ink2:#566168; --line:#DCE1E5;
+  --accent:#2A47C9; --accent-ink:#FFFFFF; --accent-soft:#E5EAFC;
+  --hero-bg:#1E36A6; --hero-ink:#FFFFFF; --hero-dim:rgba(255,255,255,.74);
+  --ok:#17744A; --ok-bg:#DFF1E7; --bad:#B3342A; --bad-bg:#F8E4E1; --warn:#8A5A00; --warn-bg:#F6EBD2;
+  --shadow:0 1px 2px rgba(23,28,32,.05),0 10px 26px -14px rgba(23,28,32,.22);
+  --tabbg:rgba(255,255,255,.9);
   --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0F1316; --surface:#171C20; --ink:#E7EBED; --ink2:#9BA6AD; --line:#2A3238;
-  --accent:#93A8FF; --accent-ink:#0C1230; --accent-soft:#1F2850;
-  --ok:#5ED19A; --ok-bg:#12301F; --bad:#FF9185; --bad-bg:#3A1B18; --warn:#EBC066; --warn-bg:#3A2D10; color-scheme:dark}}
+  --bg:#0D1114; --surface:#161B1F; --surface2:#1B2126; --ink:#E8ECEE; --ink2:#9CA7AE; --line:#29313A;
+  --accent:#96AAFF; --accent-ink:#0B1230; --accent-soft:#1D2750;
+  --hero-bg:#22338F; --hero-ink:#FFFFFF; --hero-dim:rgba(255,255,255,.72);
+  --ok:#5ED19A; --ok-bg:#12301F; --bad:#FF9185; --bad-bg:#3A1B18; --warn:#EBC066; --warn-bg:#3A2D10;
+  --shadow:0 0 0 rgba(0,0,0,0); --tabbg:rgba(22,27,31,.9); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0F1316; --surface:#171C20; --ink:#E7EBED; --ink2:#9BA6AD; --line:#2A3238;
-  --accent:#93A8FF; --accent-ink:#0C1230; --accent-soft:#1F2850;
-  --ok:#5ED19A; --ok-bg:#12301F; --bad:#FF9185; --bad-bg:#3A1B18; --warn:#EBC066; --warn-bg:#3A2D10; color-scheme:dark}
+  --bg:#0D1114; --surface:#161B1F; --surface2:#1B2126; --ink:#E8ECEE; --ink2:#9CA7AE; --line:#29313A;
+  --accent:#96AAFF; --accent-ink:#0B1230; --accent-soft:#1D2750;
+  --hero-bg:#22338F; --hero-ink:#FFFFFF; --hero-dim:rgba(255,255,255,.72);
+  --ok:#5ED19A; --ok-bg:#12301F; --bad:#FF9185; --bad-bg:#3A1B18; --warn:#EBC066; --warn-bg:#3A2D10;
+  --shadow:0 0 0 rgba(0,0,0,0); --tabbg:rgba(22,27,31,.9); color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--sans);
-  padding-block:0 calc(84px + env(safe-area-inset-bottom,0px));
+  padding-block:0 calc(92px + env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  -webkit-text-size-adjust:100%}
+  -webkit-text-size-adjust:100%;overflow-wrap:break-word}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 a{color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .wrap{max-width:640px;margin:0 auto}
 h1,h2,h3{line-height:1.2;text-wrap:balance;margin:0}
-h1{font-size:1.5rem;font-weight:600;letter-spacing:-.01em}
-h2{font-size:1.15rem;font-weight:600}
+h1{font-size:1.75rem;font-weight:600;letter-spacing:-.02em}
+h2{font-size:1.1875rem;font-weight:600;letter-spacing:-.01em}
 h3{font-size:1rem;font-weight:600}
 p{margin:0}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.muted{color:var(--ink2)}
-.small{font-size:.8125rem}
+.muted{color:var(--ink2)} .small{font-size:.8125rem}
 .lbl{font:500 .6875rem/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
 
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 6px}
-.brand{font:600 .9375rem var(--sans);letter-spacing:.02em}
-.brand b{font-family:var(--mono);color:var(--accent);font-weight:500}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:16px 4px}
+.brand{font:600 1rem var(--sans);letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+.brand i{width:22px;height:22px;border-radius:7px;background:var(--hero-bg);display:grid;place-items:center;color:#fff;font:500 .6875rem var(--mono);font-style:normal}
 .sync{font:500 .6875rem var(--mono);color:var(--ink2);display:flex;align-items:center;gap:6px}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--ink2)}
-.sync.nube .dot{background:var(--ok)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink2)} .sync.nube .dot{background:var(--ok)}
 
-main{display:flex;flex-direction:column;gap:14px;padding-block:8px 16px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.card.flat{background:transparent;border-style:dashed}
+main{display:flex;flex-direction:column;gap:14px;padding-block:10px 18px}
+main.conbar{padding-bottom:84px}
+@media (prefers-reduced-motion:no-preference){
+  main.anim>*{animation:rise .32s cubic-bezier(.2,.7,.2,1) both}
+  main.anim>*:nth-child(2){animation-delay:.04s} main.anim>*:nth-child(3){animation-delay:.08s} main.anim>*:nth-child(4){animation-delay:.12s}
+  main.anim>*:nth-child(n+5){animation-delay:.16s}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .btn,.opt,.bar>i,.mod,.tile{transition:background .15s,border-color .15s,width .35s,transform .12s}
+  .paso{animation:rise .3s ease both}
+}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0;box-shadow:var(--shadow)}
+.card.flat{background:transparent;border-style:dashed;box-shadow:none}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .stack{display:flex;flex-direction:column;gap:8px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:500;text-decoration:none;color:var(--ink);text-align:center}
-.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.sm{min-height:38px;padding:6px 12px;font-size:.875rem;border-radius:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 18px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);font-weight:500;text-decoration:none;color:var(--ink);text-align:center}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--accent)}
+.btn.sm{min-height:40px;padding:6px 14px;font-size:.875rem;border-radius:12px}
 .btn.block{width:100%}
-.btn:active{transform:translateY(1px)}
+.btn:active,.mod:active,.tile:active{transform:scale(.985)}
 .btn[disabled]{opacity:.45;cursor:default}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.8125rem;background:var(--surface)}
-.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:4px 11px;border-radius:999px;border:1px solid var(--line);font-size:.8125rem;background:var(--surface)}
+.chip.on{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
 .chip.ok{background:var(--ok-bg);border-color:transparent;color:var(--ok)}
 .chip.bad{background:var(--bad-bg);border-color:transparent;color:var(--bad)}
 .chip.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn)}
 
+.hero{background:var(--hero-bg);color:var(--hero-ink);border-radius:24px;padding:20px 20px 34px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.hero .lbl{color:var(--hero-dim)}
+.hero .big{font:500 4.5rem/1 var(--mono);letter-spacing:-.06em;display:flex;align-items:baseline;gap:8px}
+.hero .big span{font:500 1.125rem var(--sans);letter-spacing:0;color:var(--hero-dim)}
+.hero .dim{color:var(--hero-dim);font-size:.9375rem}
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.hstats div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hstats b{font:500 1.375rem var(--mono)} .hstats .lbl{font-size:.625rem}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:14px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 1px,transparent 1px 8px) bottom/100% 6px no-repeat,
+             repeating-linear-gradient(90deg,rgba(255,255,255,.85) 0 1.5px,transparent 1.5px 40px) bottom/100% 13px no-repeat}
 .count{display:flex;align-items:baseline;gap:10px}
-.count .n{font:500 3.25rem/1 var(--mono);letter-spacing:-.04em;color:var(--accent)}
-.count .u{font-size:1rem;color:var(--ink2)}
+.count .n{font:500 3rem/1 var(--mono);letter-spacing:-.04em;color:var(--accent)} .count .u{font-size:1rem;color:var(--ink2)}
 .bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 .bar>i{display:block;height:100%;background:var(--accent);border-radius:4px}
-.bar.bad>i{background:var(--bad)}
+.bar.bad>i{background:var(--bad)} .bar.ok>i{background:var(--ok)}
 .lv{display:flex;gap:6px}
-.lv button{flex:1;min-height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-weight:500;font-size:.875rem}
+.lv button{flex:1;min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:500;font-size:.875rem}
 .lv button.cur{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .tema{display:flex;flex-direction:column;gap:10px}
 .tema .h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .tema .code{font:500 .75rem var(--mono);color:var(--accent)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{display:flex;flex-direction:column;gap:4px;text-align:left;padding:16px;border-radius:18px;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);min-height:104px;justify-content:space-between}
+.tile b{font-size:1.0625rem;font-weight:600;line-height:1.2} .tile span{font-size:.8125rem;color:var(--ink2)}
+.tile.pri{grid-column:1/-1;background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-height:92px}
+.tile.pri span{color:var(--accent-ink);opacity:.82}
 
-/* sesión */
 .sesion-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .pips{display:flex;gap:5px;flex:1;justify-content:center}
-.pips i{width:100%;max-width:26px;height:5px;border-radius:3px;background:var(--line)}
+.pips i{width:100%;max-width:28px;height:6px;border-radius:3px;background:var(--line)}
 .pips i.ok{background:var(--ok)} .pips i.bad{background:var(--bad)} .pips i.now{background:var(--accent)}
-.enun{font-size:1.0625rem;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+.enun{font-size:1.125rem;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere}
 .opts{display:flex;flex-direction:column;gap:10px}
-.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;min-height:54px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);overflow-wrap:anywhere}
-.bub{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ink2);display:grid;place-items:center;font:500 .8125rem var(--mono);color:var(--ink2)}
-.opt .t{padding-top:3px;min-width:0}
+.opt{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:12px 14px;min-height:60px;border:1.5px solid var(--line);border-radius:16px;background:var(--surface);overflow-wrap:anywhere;font-size:1.0625rem}
+.bub{flex:none;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--ink2);display:grid;place-items:center;font:500 .875rem var(--mono);color:var(--ink2)}
+.opt .t{min-width:0}
 .opt.ok{border-color:var(--ok);background:var(--ok-bg)} .opt.ok .bub{background:var(--ok);border-color:var(--ok);color:var(--surface)}
 .opt.bad{border-color:var(--bad);background:var(--bad-bg)} .opt.bad .bub{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)} .opt.sel .bub{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .opt[disabled]{cursor:default}
 .letters{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.letters .opt{justify-content:center;padding:10px 0;min-height:56px;align-items:center}
-.letters .opt .bub{width:34px;height:34px}
-.fb{border-radius:12px;padding:12px 14px;font-size:.9375rem;display:flex;flex-direction:column;gap:6px}
+.letters .opt{justify-content:center;padding:10px 0;min-height:60px}
+.letters .opt .bub{width:36px;height:36px}
+.fb{border-radius:16px;padding:14px 16px;font-size:.9375rem;display:flex;flex-direction:column;gap:6px}
 .fb.ok{background:var(--ok-bg);color:var(--ok)} .fb.bad{background:var(--bad-bg);color:var(--bad)} .fb.neu{background:var(--accent-soft);color:var(--ink)}
 .fb .why{color:var(--ink)}
-.sol{border-left:3px solid var(--accent);padding:2px 0 2px 12px;font-size:.9375rem;overflow-wrap:anywhere}
+.sol{border-left:3px solid var(--accent);padding:2px 0 2px 14px;font-size:.9375rem;overflow-wrap:anywhere}
 
-/* tablas y guías */
 .guia h2{margin:6px 0 4px} .guia h3{margin:18px 0 6px} .guia h4{margin:14px 0 4px}
 .guia p,.guia ul,.guia ol,.guia blockquote,.guia .tw{margin:8px 0}
 .guia ul,.guia ol{padding-left:22px} .guia li{margin:3px 0}
-.guia blockquote{border-left:3px solid var(--accent);padding:4px 12px;background:var(--accent-soft);border-radius:0 10px 10px 0}
+.guia blockquote{border-left:3px solid var(--accent);padding:4px 12px;background:var(--accent-soft);border-radius:0 12px 12px 0}
 .guia code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);padding:1px 5px;border-radius:5px}
 .guia hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .tw{overflow-x:auto;max-width:100%}
@@ -110,55 +139,84 @@ main{display:flex;flex-direction:column;gap:14px;padding-block:8px 16px}
 .tw th,.tw td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
 .tw th{background:var(--accent-soft);white-space:nowrap}
 .list{display:flex;flex-direction:column}
-.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left;border-radius:0}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 2px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left;border-radius:0;min-height:56px}
 .item:last-child{border-bottom:0}
 
-/* ensayo */
+/* aprendizaje */
+.lec-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.segs{display:flex;gap:4px}
+.segs i{flex:1;height:7px;border-radius:4px;background:var(--line);cursor:pointer}
+.segs i.done{background:var(--accent)} .segs i.now{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.step h2{font-size:1.375rem}
+.kv{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.kv-row{display:grid;grid-template-columns:minmax(92px,33%) 1fr;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:.9375rem}
+.kv-row:nth-child(even){background:var(--surface2)} .kv-row:last-child{border-bottom:0}
+.kv-row b{color:var(--accent);font-weight:600}
+.problema{background:var(--accent-soft);border-radius:16px;padding:14px 16px;font-size:1.0625rem;overflow-wrap:anywhere}
+.paso{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:6px 0;align-items:start}
+.paso .n{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:500 .8125rem var(--mono)}
+.paso p{padding-top:3px;overflow-wrap:anywhere}
+.res{background:var(--ok-bg);color:var(--ok);border-radius:16px;padding:14px 16px;font-weight:600}
+.flipc{perspective:900px;width:100%;background:none;border:0;padding:0;text-align:left;display:block}
+.flipc .in{display:grid;transition:transform .5s;transform-style:preserve-3d}
+.flipc.on .in{transform:rotateY(180deg)}
+.flipc .face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px;overflow-wrap:anywhere}
+.flipc .front{background:var(--bad-bg)} .flipc .front .lbl{color:var(--bad)}
+.flipc .back{background:var(--ok-bg);transform:rotateY(180deg)} .flipc .back .lbl{color:var(--ok)}
+.flipc.big .face{min-height:260px;justify-content:center;align-items:center;text-align:center;padding:24px}
+.flipc.big .front{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)} .flipc.big .front .lbl{color:var(--ink2)}
+.fq{font-size:1.3125rem;line-height:1.35;font-weight:500}
+@media (prefers-reduced-motion:reduce){.flipc .in{transition:none}}
+.mod{display:grid;grid-template-columns:46px 1fr;gap:4px 14px;text-align:left;width:100%;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}
+.mod .num{grid-row:1/4;width:46px;height:46px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:500 .9375rem var(--mono)}
+.mod.hecho .num{background:var(--ok-bg);color:var(--ok)}
+.mod b{font-size:1.0625rem;font-weight:600;line-height:1.25} .mod .rs{font-size:.8125rem;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mod .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.75rem;color:var(--ink2)}
+.mod .meta .bar{flex:1;min-width:48px}
+
 .er{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
 .er .n{flex:none;width:34px;font:500 .8125rem var(--mono);color:var(--ink2)}
 .seg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex:1}
-.seg button{min-height:40px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);font:500 .875rem var(--mono)}
+.seg button{min-height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font:500 .875rem var(--mono)}
 .seg button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-textarea{width:100%;min-height:64px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:10px;font:500 .875rem var(--mono);letter-spacing:.06em;resize:vertical}
-select{width:100%;min-height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:0 10px;font:inherit}
-.fixbar{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));padding:10px max(16px,env(safe-area-inset-left,0px));background:var(--bg);border-top:1px solid var(--line)}
+textarea{width:100%;min-height:72px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:10px;font:500 .875rem var(--mono);letter-spacing:.04em;resize:vertical}
+.fixbar{position:fixed;left:0;right:0;bottom:calc(68px + env(safe-area-inset-bottom,0px));padding:10px max(16px,env(safe-area-inset-left,0px)) 10px;background:var(--tabbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);z-index:4}
 .fixbar .wrap{display:flex;gap:10px;align-items:center}
-
-.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+.fixbar .btn{flex:1}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--tabbg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);
   display:grid;grid-template-columns:repeat(5,1fr);padding:6px max(8px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
-.tabs button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;padding:6px 2px;color:var(--ink2);font-size:.6875rem;font-weight:500;border-radius:10px;min-height:52px}
-.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tabs button.on{color:var(--accent)}
-.tabs .badge{position:absolute;top:2px;left:calc(50% + 6px);background:var(--bad);color:#fff;border-radius:999px;font:500 .625rem var(--mono);padding:1px 5px}
+.tabs button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:4px 2px;color:var(--ink2);font-size:.6875rem;font-weight:500;min-height:54px}
+.tabs .ic{width:54px;height:30px;border-radius:15px;display:grid;place-items:center;transition:background .2s}
+.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{color:var(--accent);font-weight:600} .tabs button.on .ic{background:var(--accent-soft)}
+.tabs .badge{position:absolute;top:0;left:calc(50% + 8px);background:var(--bad);color:#fff;border-radius:999px;font:500 .625rem var(--mono);padding:1px 6px}
 .err{color:var(--bad)}
-.opt.sel{border-color:var(--accent);background:var(--accent-soft)} .opt.sel .bub{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.bar.ok>i{background:var(--ok)}
-.crono{font:500 1.125rem var(--mono);color:var(--accent)} .crono.low{color:var(--bad)}
+.crono{font:500 1.25rem var(--mono);color:var(--accent)} .crono.low{color:var(--bad)}
 .chart{width:100%;height:auto;display:block;overflow:visible}
-.chart text{fill:var(--ink2);font:500 10px var(--mono)} .chart .grid{stroke:var(--line);stroke-width:1} .chart .ax{stroke:var(--ink2);stroke-width:1}
+.chart text{fill:var(--ink2);font:500 10px var(--mono)} .chart .grid{stroke:var(--line);stroke-width:1}
 .chart .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .chart .mk{fill:var(--accent);stroke:var(--surface);stroke-width:2} .chart .bar1{fill:var(--accent)}
 .chart .meta{stroke:var(--ink2);stroke-width:1.5;stroke-dasharray:5 4} .chart .hit{fill:transparent;cursor:pointer}
 #tip{position:fixed;z-index:20;background:var(--ink);color:var(--bg);padding:6px 10px;border-radius:8px;font:500 .75rem var(--mono);pointer-events:none;max-width:70vw}
-details.tabla{margin-top:4px} details.tabla summary{cursor:pointer;color:var(--accent);font-size:.8125rem;min-height:32px;display:flex;align-items:center}
-.sw{display:flex;gap:6px;flex-wrap:wrap}
-.sw button{min-height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font:500 .8125rem var(--mono)}
+details.tabla{margin-top:4px} details.tabla summary{cursor:pointer;color:var(--accent);font-size:.875rem;min-height:36px;display:flex;align-items:center}
+details.meta summary{list-style:none;cursor:pointer} details.meta summary::-webkit-details-marker{display:none}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw button{min-height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font:500 .8125rem var(--mono)}
 .sw button.cur{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
-.ln1{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.875rem}
-@media (prefers-reduced-motion:no-preference){.btn,.opt,.bar>i{transition:background .15s,border-color .15s,width .3s}}
+.ln1{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:.875rem}
 </style>
 
 <div class="wrap">
-  <div class="top"><div class="brand">PAES <b>M2</b></div><div class="sync" id="sync"><span class="dot"></span><span id="synctxt">cargando…</span></div></div>
+  <div class="top"><div class="brand"><i>M2</i>Entrenador PAES</div><div class="sync" id="sync"><span class="dot"></span><span id="synctxt">cargando…</span></div></div>
   <main id="main"><div class="card"><p class="muted">Cargando tus datos…</p></div></main>
 </div>
 <div id="tip" hidden></div>
 <nav class="tabs" id="tabs" aria-label="Secciones">
-  <button data-act="tab" data-v="hoy"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Hoy</button>
-  <button data-act="tab" data-v="practicar"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/></svg>Practicar</button>
-  <button data-act="tab" data-v="repaso"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>Repaso<span class="badge" id="badge" hidden></span></button>
-  <button data-act="tab" data-v="progreso"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progreso</button>
-  <button data-act="tab" data-v="guias"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg>Guías</button>
+  <button data-act="tab" data-v="hoy"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Hoy</button>
+  <button data-act="tab" data-v="practicar"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/></svg></span>Practicar</button>
+  <button data-act="tab" data-v="repaso"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg></span>Repaso<span class="badge" id="badge" hidden></span></button>
+  <button data-act="tab" data-v="progreso"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>Progreso</button>
+  <button data-act="tab" data-v="guias"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 8h6M9 12h4"/></svg></span>Aprende</button>
 </nav>
 
 <script>
@@ -177,14 +235,14 @@ const fmtF=s=>{const d=parse(s);return `${DIAS[d.getDay()]} ${d.getDate()} ${MES
 const pct=x=>Math.round(100*x);
 const LET='ABCDE';
 
-let D=null,POOL={},POOLSUB={},GUIAS={},S=null,BQ={},cargaOk=false;
-let vista=(location.hash||'#hoy').slice(1),sesion=null,guia=null,ens=null,dbDoc=null,cloud=false;
+let D=null,L=null,POOL={},POOLSUB={},GUIAS={},S=null,BQ={},cargaOk=false;
+let vista=(location.hash||'#hoy').slice(1),sesion=null,guia=null,ens=null,dbDoc=null,cloud=false,lec=null,fc=null,bk=null;
 const VISTAS=['hoy','practicar','repaso','progreso','guias'];
 if(!VISTAS.includes(vista))vista='hoy';
 
 /* ───────── estado y persistencia ───────── */
 function estadoInicial(){const s=JSON.parse(JSON.stringify(D.semilla));s.ts=0;return normaliza(s)}
-function normaliza(s){s.temas=s.temas||{};s.errores=s.errores||{};s.ensayos=s.ensayos||[];s.oficiales=s.oficiales||{};s.sub=s.sub||{};s.cartas=s.cartas||{};s.hist=s.hist||[];s.dias=s.dias||{};s.ajustes=Object.assign({conf:true,meta:800},s.ajustes||{});s.ts=s.ts||0;return s}
+function normaliza(s){s.temas=s.temas||{};s.errores=s.errores||{};s.ensayos=s.ensayos||[];s.oficiales=s.oficiales||{};s.sub=s.sub||{};s.cartas=s.cartas||{};s.hist=s.hist||[];s.guias=s.guias||{};s.formulas=s.formulas||{};s.dias=s.dias||{};s.ajustes=Object.assign({conf:true,meta:800},s.ajustes||{});s.ts=s.ts||0;return s}
 function leerLocal(){try{const t=localStorage.getItem(KEY);return t?normaliza(JSON.parse(t)):null}catch(e){return null}}
 function escribirLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let tmr=null,guardando=false,sucio=false;
@@ -318,47 +376,46 @@ function badge(){const n=S?totalPend():0;const b=$('#badge');b.hidden=!n;b.textC
 function bar(frac,cls){return `<div class="bar ${cls||''}"><i style="width:${Math.max(2,Math.min(100,frac*100))}%"></i></div>`}
 
 function htmlHoy(){
-  const ahora=new Date(),meta=new Date(D.paes),ms=meta-ahora;
-  const dias=Math.floor(ms/864e5),horas=Math.floor(ms%864e5/36e5);
-  const plan=D.plan[hoy()];const nOf=pendientes().length,nCa=cartasPend().length,pend={length:nOf+nCa};
+  const ms=new Date(D.paes)-new Date();
+  const dias=Math.max(0,Math.floor(ms/864e5)),horas=Math.max(0,Math.floor(ms%864e5/36e5));
+  const plan=D.plan[hoy()],nOf=pendientes().length,nCa=cartasPend().length,pend=nOf+nCa;
   const pr=prioridades().filter(x=>x.gen),top=pr[0];
-  const ult=S.ensayos[S.ensayos.length-1];
-  let h='';
-  h+=`<section class="card"><span class="lbl">Cuenta regresiva</span>`+
-    (ms>0?`<div class="count"><span class="n">${dias}</span><span class="u">días y ${horas} h para la PAES M2</span></div><p class="small muted">Lunes 30 de noviembre · 15:00 h (calendario DEMRE)</p>`
-         :`<p>La fecha de la PAES M2 ya pasó. Puedes seguir practicando para la próxima.</p>`)+`</section>`;
+  const ult=S.ensayos.slice().reverse().find(e=>e.puntaje),m=S.ajustes.meta,need=metaP(m);
+  let h=`<section class="hero"><span class="lbl">Faltan para la PAES M2</span>`+
+    (ms>0?`<div class="big">${dias}<span>${dias===1?'día':'días'}</span></div><p class="dim">y ${horas} h · lunes 30 de noviembre · 15:00</p>`:`<p>La fecha ya pasó. Sigue practicando para la próxima.</p>`)+
+    `<div class="hstats"><div><span class="lbl">Último ensayo</span><b>${ult?ult.puntaje:'—'}</b></div><div><span class="lbl">Mi meta</span><b>${m}</b></div><div><span class="lbl">Correctas meta</span><b>~${need.med}</b></div></div></section>`;
+  h+=`<section class="card"><span class="lbl">Lo siguiente</span>`+
+    (pend?`<h2>${pend} por repasar</h2><p class="muted small">${nOf} preguntas oficiales y ${nCa} ejercicios de refuerzo. Tres aciertos seguidos y quedan dominados.</p><button class="btn pri block" data-act="repaso-ini">Empezar repaso</button><button class="btn block" data-act="refuerzo">Sesión de refuerzo</button>`
+         :`<h2>Repasos al día</h2><p class="muted small">Aprovecha para reforzar tus puntos más débiles.</p><button class="btn pri block" data-act="refuerzo">Sesión de refuerzo</button>`)+`</section>`;
   if(plan)h+=`<section class="card"><span class="lbl">Plan de hoy · ${fmtF(hoy())}</span><h2>${esc(plan.t)}</h2><p class="muted">${esc(plan.d)}</p></section>`;
-  h+=`<section class="card"><span class="lbl">Repaso de errores</span>`+
-    (pend.length?`<h2>${pend.length} por repasar</h2><p class="muted small">${nOf} preguntas oficiales y ${nCa} ejercicios de refuerzo. Vuelven a +1, +3 y +7 días; con 3 aciertos seguidos quedan dominados.</p><button class="btn pri block" data-act="repaso-ini">Empezar repaso</button>`
-      :`<h2>Todo al día</h2><p class="muted small">No tienes repasos pendientes hoy.</p>`)+`</section>`;
-  h+=`<section class="card"><span class="lbl">Tus puntos más débiles</span>${htmlDebiles(3)}<button class="btn block" data-act="refuerzo">Sesión de refuerzo</button></section>`;
+  h+=`<section class="card"><span class="lbl">Tus puntos más débiles</span>${htmlDebiles(3)}</section>`;
   if(top){const te=S.temas[top.t]||{nivel:1};
     h+=`<section class="card"><span class="lbl">Tu foco ahora</span><h2>${esc(nomT(top.t))}</h2>
-      <p class="muted small">Se espera perder ~${top.juego.toFixed(1)} de 50 preguntas · nivel ${te.nivel}</p>
-      <div class="row"><button class="btn pri" style="flex:1" data-act="gen" data-t="${top.t}" data-n="6">Practicar 6</button>
-      <button class="btn" data-act="guia-mod" data-t="${top.t}">Guía</button></div>
-      <div class="chips">${pr.slice(1,4).map(x=>`<button class="chip" data-act="gen" data-t="${x.t}" data-n="6">${x.t} · ${x.juego.toFixed(1)}</button>`).join('')}</div></section>`}
-  {const m=S.ajustes.meta,need=metaP(m),act=ult&&ult.puntaje?ult.correctas:null;
-    h+=`<section class="card"><span class="lbl">Mi meta de puntaje en M2</span><div class="sw">${[700,750,800,850,900,950,1000].map(v=>`<button class="${v===m?'cur':''}" data-act="meta" data-m="${v}">${v}</button>`).join('')}</div>
+      <p class="muted small">Se esperan perder ~${top.juego.toFixed(1)} de 50 preguntas · nivel ${te.nivel}</p>
+      <div class="row"><button class="btn pri" style="flex:1" data-act="gen" data-t="${top.t}" data-n="6">Practicar 6</button><button class="btn" style="flex:1" data-act="guia-mod" data-t="${top.t}">Lección</button></div></section>`}
+  h+=`<details class="card meta"><summary class="row"><span><span class="lbl">Mi meta de puntaje</span><br><b>${m} puntos</b> <span class="muted small">≈ ${need.med} de 50</span></span><span class="chip on">cambiar</span></summary>
+    <div class="stack" style="margin-top:12px"><div class="sw">${[700,750,800,850,900,950,1000].map(v=>`<button class="${v===m?'cur':''}" data-act="meta" data-m="${v}">${v}</button>`).join('')}</div>
       <p><b>${m} puntos</b> exigen ~<b class="mono">${need.med}</b> de 50 correctas <span class="small muted">(${need.min===need.max?need.min:need.min+'–'+need.max} según la prueba)</span>.</p>
-      ${act!==null?`<p class="small muted">Tu último ensayo: ${act} correctas${act>=need.med?' · ya llegas a la meta.':` · te faltan ~${need.med-act}.`} ${need.med-act>0?'Salen sobre todo de tus puntos débiles.':''}</p>`:''}
-      ${m>=950?'<p class="small muted">Con 49 o 50 de 50 se llega al 1000 en las pruebas recientes: casi cero errores. Es meta de largo plazo; mira “Cómo estudiar” en Guías.</p>':''}</section>`;}
-  if(ult)h+=`<section class="card"><span class="lbl">Último ensayo</span><div class="row"><h2>${esc(ult.prueba)} · ${ult.correctas}/${ult.puntuables}</h2><span class="mono" style="font-size:1.25rem;color:var(--accent)">${ult.puntaje?ult.puntaje+' pts':'—'}</span></div><button class="btn block" data-act="ens-ini">Corregir un ensayo nuevo</button></section>`;
+      ${ult?`<p class="small muted">Tu último ensayo: ${ult.correctas} correctas${ult.correctas>=need.med?' · ya llegas a la meta.':` · te faltan ~${need.med-ult.correctas}. Salen sobre todo de tus puntos débiles.`}</p>`:''}
+      ${m>=950?'<p class="small muted">Con 49 o 50 de 50 se llega al 1000 en las pruebas recientes: casi cero errores. Es meta de largo plazo; mira “Cómo estudiar” en Aprende.</p>':''}</div></details>`;
+  h+=`<button class="btn block" data-act="ens-ini">Corregir un ensayo</button>`;
   return h;
 }
 
 function htmlPracticar(){
   const pr=prioridades();const gens=pr.filter(x=>x.gen),max=Math.max(...gens.map(x=>x.juego),1);
   const top3=gens.slice(0,3).map(x=>x.t);
-  let h=`<h1>Practicar</h1><p class="muted">Ejercicios tipo PAES. Cada opción incorrecta te explica qué error cometiste. Subes de nivel con 4 aciertos de los últimos 5.</p>`;
-  h+=`<button class="btn pri block" data-act="refuerzo">Sesión de refuerzo · tus puntos más débiles</button>
-    <button class="btn block" data-act="gen" data-t="${top3.join(',')}" data-n="9">Sesión mixta · tus 3 temas prioritarios</button>
-    <section class="card"><span class="lbl">Mini-ensayo cronometrado</span><p class="small muted">Como la prueba: 2 min 30 s por pregunta, sin ver resultados hasta el final. Entrena el ritmo; lo fallado vuelve a tu refuerzo.</p><div class="row"><button class="btn" style="flex:1" data-act="prueba-ini" data-n="10">10 preguntas · 25 min</button><button class="btn" style="flex:1" data-act="prueba-ini" data-n="20">20 preguntas · 50 min</button></div></section>`;
+  let h=`<h1>Practicar</h1>`;
+  h+=`<div class="tiles">
+    <button class="tile pri" data-act="refuerzo"><b>Sesión de refuerzo</b><span>9 ejercicios mezclados de tus puntos más débiles</span></button>
+    <button class="tile" data-act="gen" data-t="${top3.join(',')}" data-n="9"><b>Sesión mixta</b><span>Tus 3 temas prioritarios</span></button>
+    <button class="tile" data-act="prueba-ini" data-n="10"><b>Mini-ensayo</b><span>10 preguntas · 25 min · como la prueba</span></button></div>
+    <p class="small muted">En el mini-ensayo no ves resultados hasta el final (2 min 30 s por pregunta). Lo fallado vuelve a tu refuerzo. </p><button class="btn sm" data-act="prueba-ini" data-n="20">Hacer un mini-ensayo de 20 preguntas</button>`;
+  h+=`<h2>Por tema</h2>`;
   gens.forEach(x=>{const te=S.temas[x.t]||{nivel:1,intentos:0,aciertos:0,dominado:false};
-    h+=`<section class="card tema"><div class="h"><span><span class="code">${x.t}</span><br><b>${esc(nomT(x.t))}</b></span>${te.dominado?'<span class="chip ok">dominado</span>':''}</div>
-      ${bar(x.juego/max,'bad')}<p class="small muted">Se esperan perder ${x.juego.toFixed(1)} · ${te.intentos?`${te.aciertos}/${te.intentos} aciertos`:'sin práctica aún'} · ${x.n_of} oficiales</p>
-      <div class="lv">${[1,2,3].map(n=>`<button class="${te.nivel===n?'cur':''}" data-act="gen" data-t="${x.t}" data-n="6" data-lv="${n}">Nivel ${n}${te.nivel===n?' ★':''}</button>`).join('')}</div>
-      <button class="btn sm" data-act="of-tema" data-t="${x.t}">Preguntas oficiales de este tema</button></section>`});
+    h+=`<section class="card tema" style="gap:8px"><div class="h"><span><span class="code">${x.t}</span><br><b>${esc(nomT(x.t))}</b></span>${te.dominado?'<span class="chip ok">dominado</span>':''}</div>
+      ${bar(x.juego/max,'bad')}<p class="small muted">Se esperan perder ${x.juego.toFixed(1)} · ${te.intentos?`${te.aciertos}/${te.intentos} aciertos`:'sin práctica aún'}</p>
+      <div class="lv"><span class="small muted" style="align-self:center;padding-right:2px">Nivel</span>${[1,2,3].map(n=>`<button class="${te.nivel===n?'cur':''}" data-act="gen" data-t="${x.t}" data-n="6" data-lv="${n}">${n}${te.nivel===n?' ★':''}</button>`).join('')}<button style="flex:2" data-act="of-tema" data-t="${x.t}">Oficiales (${x.n_of})</button></div></section>`});
   const otros=pr.filter(x=>!x.gen&&x.n_of);
   if(otros.length){h+=`<h2>Solo con preguntas oficiales</h2><div class="card"><div class="list">${otros.map(x=>`<button class="item" data-act="of-tema" data-t="${x.t}"><span><b>${esc(nomT(x.t))}</b><br><span class="small muted">${x.t} · ${x.n_of} oficiales · ~${x.juego.toFixed(1)} en juego</span></span><span class="muted">›</span></button>`).join('')}</div></div>`}
   return h;
@@ -433,7 +490,7 @@ function htmlSesion(){
   const it=s.items[s.i],r=s.resp,resp=r!==null,prueba=s.modo==='prueba';
   const pips=s.items.map((_,k)=>`<i class="${prueba?(k<s.i?'ok':(k===s.i?'now':'')):(k<s.hist.length?s.hist[k]:(k===s.i?'now':''))}"></i>`).join('');
   let h=`<div class="sesion-top"><button class="btn sm" data-act="${prueba?'prueba-fin':'salir'}">${prueba?'Terminar':'← Salir'}</button><div class="pips">${pips}</div>${prueba?`<span class="crono" id="crono">${fmtT(s.limite-(Date.now()-s.t0))}</span>`:`<span class="mono small muted">${s.i+1}/${s.n}</span>`}</div>`;
-  const sig=`<button class="btn pri block" data-act="sig">${s.i+1>=s.n?'Ver resultado':'Siguiente'}</button>`;
+  const sig=`<div class="fixbar"><div class="wrap"><button class="btn pri" data-act="sig">${s.i+1>=s.n?'Ver resultado':'Siguiente'}</button></div></div>`;
   const pedirConf=!prueba&&s.sel!==null&&!resp;
   const confPanel=pedirConf?`<section class="card"><span class="lbl">¿Qué tan seguro estás de tu respuesta?</span><div class="lv">${CONFS.map((c,k)=>`<button data-act="conf" data-c="${k}">${c}</button>`).join('')}</div><p class="small muted">Así detecto los errores que cometes con seguridad: son los que más conviene corregir.</p></section>`:'';
   if(it.k==='gen'){
@@ -553,7 +610,11 @@ function htmlResumen(){
   const cs=Object.keys(S.cartas),act=cs.filter(k=>!S.cartas[k].dominada).length;
   h+=`<section class="card"><span class="lbl">Subtemas más débiles</span><div class="stack" style="gap:12px">${dd.map(x=>`<div class="tema" style="gap:5px"><div class="h"><span class="small"><b>${esc(etS(x.t,x.s))}</b> <span class="muted">${x.t}</span></span><b class="mono">${x.juego.toFixed(1)}</b></div>${bar(x.juego/maxd,'bad')}<span class="small muted">${x.e} error${x.e===1?'':'es'} en ${x.n}</span></div>`).join('')||'<p class="muted small">Se llenará con tus ensayos y ejercicios.</p>'}</div>
     <div class="chips"><span class="chip warn">${act} tarjetas de refuerzo activas</span><span class="chip ok">${cs.length-act} dominadas</span></div></section>`;
-  h+=`<section class="card"><span class="lbl">Ajustes</span><div class="row"><span class="small">Preguntar qué tan seguro estás antes de ver el resultado</span><button class="btn sm" data-act="conf-toggle">${S.ajustes.conf?'Activado':'Apagado'}</button></div></section>
+  h+=`<section class="card"><span class="lbl">Respaldo de tus datos</span><p class="small muted">Tu progreso se guarda solo. Si quieres, copia un respaldo y guárdalo; puedes restaurarlo si cambias de cuenta o de dispositivo.</p>
+    <div class="row"><button class="btn sm" data-act="bk-copy">Copiar respaldo</button><button class="btn sm" data-act="bk-open">Restaurar…</button></div>
+    ${bk?`<div class="stack">${bk.msg?`<p class="small">${esc(bk.msg)}</p>`:''}<textarea id="bktxt" spellcheck="false" ${bk.restore?'placeholder="Pega aquí tu respaldo"':'readonly'}>${bk.restore?'':esc(bk.txt)}</textarea>
+      ${bk.restore?(bk.pend?'<div class="row"><button class="btn sm pri" data-act="bk-confirm">Sí, restaurar</button><button class="btn sm" data-act="bk-cancel">Cancelar</button></div>':'<div class="row"><button class="btn sm pri" data-act="bk-restore">Revisar respaldo</button><button class="btn sm" data-act="bk-cancel">Cancelar</button></div>'):'<button class="btn sm" data-act="bk-cancel">Cerrar</button>'}</div>`:''}</section>
+  <section class="card"><span class="lbl">Ajustes</span><div class="row"><span class="small">Preguntar qué tan seguro estás antes de ver el resultado</span><button class="btn sm" data-act="conf-toggle">${S.ajustes.conf?'Activado':'Apagado'}</button></div></section>
     <section class="card flat"><p class="small muted">Prioridad = 50 × peso del tema en 7 pruebas oficiales × tasa de error suavizada de tus ensayos y práctica. Con pocos datos es una guía; cada ensayo la afina. ${cloud?'Tu progreso se guarda en tu cuenta.':'Tu progreso se guarda solo en este teléfono.'}</p></section>`;
   return h;
 }
@@ -659,43 +720,127 @@ function htmlEnsayoRes(){
     <button class="btn pri block" data-act="tab" data-v="progreso">Ver mis prioridades</button>`;
 }
 
-/* guías */
+/* ───────── Aprende: lecciones interactivas, tarjetas de fórmulas y documentos ───────── */
+const modInfo=g=>D.modulos.find(m=>m.guia===g);
+const pasosDe=g=>L.lecciones[g].pasos.concat([{t:'fin'}]);
+const NOMP={idea:'Idea clave',ejemplo:'Ejemplo paso a paso',mini:'Ponte a prueba',trampas:'Trampas frecuentes',tus:'Tus errores',fin:'Listo'};
+function progMod(g){const x=S.guias[g];if(!x)return 0;if(x.h)return 1;return Math.min(.95,(x.max||0)/pasosDe(g).length)}
+function abrirLec(g){const x=S.guias[g];lec={g,i:(x&&!x.h)?x.p:0,rev:0,mini:null,flip:new Set()};vista='guias';guia=null;fc=null;sesion=null;ens=null;render()}
+function lecIr(k){
+  const pasos=pasosDe(lec.g);k=Math.max(0,Math.min(pasos.length-1,k));
+  lec.i=k;lec.rev=0;lec.mini=null;lec.flip=new Set();
+  const x=S.guias[lec.g]||(S.guias[lec.g]={p:0,max:0,h:false,v:0});x.p=k;x.max=Math.max(x.max||0,k);x.v=Date.now();
+  if(pasos[k].t==='fin')x.h=true;
+  save();render();
+}
+function nuevoMini(p){
+  let pool=[];if(p.sub)pool=POOLSUB[p.tema+'|'+p.sub+'|1']||POOLSUB[p.tema+'|'+p.sub]||[];
+  if(!pool.length)pool=POOL[p.tema+'|1']||POOL[p.tema+'|2']||[];
+  const prev=lec.mini&&lec.mini.ej,lista=pool.filter(e=>e!==prev);
+  lec.mini={ej:(lista.length?lista:pool)[Math.floor(Math.random()*(lista.length||pool.length))],resp:null};
+}
+function htmlLec(){
+  const g=lec.g,pasos=pasosDe(g),n=pasos.length,p=pasos[lec.i],mi=modInfo(g);
+  let h=`<div class="lec-top"><button class="btn sm ghost" data-act="lec-salir">← Aprende</button><span class="lbl">${NOMP[p.t]} · ${lec.i+1}/${n}</span></div>
+    <div class="segs">${pasos.map((_,k)=>`<i class="${k<lec.i?'done':(k===lec.i?'now':'')}" data-act="lec-ir" data-k="${k}"></i>`).join('')}</div>`;
+  if(p.t==='idea'){
+    h+=`<section class="card step"><span class="lbl">${esc(GUIAS[g].titulo)}</span><h2>${esc(p.titulo)}</h2><p>${esc(p.texto)}</p>
+      <div class="kv">${p.tabla.map(r=>`<div class="kv-row"><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join('')}</div></section>`;
+  }else if(p.t==='ejemplo'){
+    const tot=p.pasos.length,r=lec.rev;
+    h+=`<section class="card step"><span class="lbl">${esc(p.titulo)}</span><div class="problema">${esc(p.enun)}</div>
+      ${r===0?'<p class="small muted">Intenta resolverlo en papel y luego revela los pasos uno a uno.</p>':''}
+      <div>${p.pasos.slice(0,r).map((t,k)=>`<div class="paso"><span class="n">${k+1}</span><p>${esc(t)}</p></div>`).join('')}</div>
+      ${r>=tot?`<div class="res">✓ ${esc(p.res)}</div>`:`<button class="btn pri block" data-act="lec-rev">${r===0?'Mostrar el primer paso':`Siguiente paso (${r}/${tot})`}</button>`}</section>`;
+  }else if(p.t==='mini'){
+    if(!lec.mini)nuevoMini(p);const mn=lec.mini,e=mn.ej,r=mn.resp,resp=r!==null;
+    h+=`<section class="card step"><span class="lbl">${esc(p.titulo)}</span><p class="enun">${esc(e.q)}</p>
+      <div class="opts">${e.o.map((o,k)=>{let c='';if(resp){if(k===e.c)c='ok';else if(k===r)c='bad'}
+        return `<button class="opt ${c}" data-act="lec-resp" data-i="${k}" ${resp?'disabled':''}><span class="bub">${LET[k]}</span><span class="t">${esc(o)}</span></button>`}).join('')}</div></section>`;
+    if(resp){const ok=r===e.c;
+      h+=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✓ Correcto':'✗ Era la '+LET[e.c]}</b>${!ok&&e.r[r]?`<span class="why">Tu opción: ${esc(e.r[r])}</span>`:''}${ok?'':'<span class="why">Mañana te pongo otro ejercicio de este subtema.</span>'}</div>
+        <div class="sol"><b>Solución.</b> ${esc(e.e)}</div><button class="btn block" data-act="lec-otro">Otro ejercicio</button>`}
+  }else if(p.t==='trampas'){
+    h+=`<section class="card step"><span class="lbl">${esc(GUIAS[g].titulo)}</span><h2>${esc(p.titulo)}</h2><p class="small muted">Toca cada tarjeta para ver cómo evitar la trampa.</p>
+      <div class="stack" style="gap:12px">${p.items.map((it,k)=>`<button class="flipc ${lec.flip.has(k)?'on':''}" data-act="lec-flip" data-k="${k}" aria-label="Trampa ${k+1}"><span class="in"><span class="face front"><span class="lbl">Trampa</span>${esc(it[0])}</span><span class="face back"><span class="lbl">Cómo evitarla</span>${esc(it[1])}</span></span></button>`).join('')}</div></section>`;
+  }else if(p.t==='tus'){
+    const ids=Object.keys(S.errores).filter(i=>BQ[i]&&mi.temas.includes(BQ[i].t));
+    const temasConErr=mi.temas.filter(t=>ids.some(i=>BQ[i].t===t));
+    h+=`<section class="card step"><span class="lbl">Basado en tu ensayo</span><h2>${esc(p.titulo)}</h2>
+      <div class="kv">${p.items.map(r=>`<div class="kv-row"><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join('')}</div></section>`;
+    if(ids.length)h+=`<section class="card"><span class="lbl">Tus preguntas oficiales de este módulo</span><div class="list">${ids.map(i=>{const q=BQ[i],e=S.errores[i];
+      return `<div class="item"><span><b>${esc(etq(q))}</b><br><span class="small muted">${esc(q.d)}</span></span><span class="chip ${e.dominada?'ok':(e.racha?'on':'warn')}">${e.dominada?'dominada':(e.racha?`racha ${e.racha}/3`:'por repasar')}</span></div>`}).join('')}</div>
+      ${temasConErr.map(t=>`<button class="btn block" data-act="of-tema" data-t="${t}">Practicar oficiales · ${esc(nomT(t))}</button>`).join('')}</section>`;
+  }else{
+    const sig=D.modulos.map(m=>m.guia),k=sig.indexOf(g),next=sig[k+1];
+    const gen=mi.temas.filter(t=>D.gens.includes(t));
+    h+=`<section class="card step"><span class="lbl">Módulo completo</span><h2>¡Listo! Ahora a practicar</h2><p class="muted">Lo que ya viste solo se fija resolviendo. Haz una serie corta de este módulo.</p>
+      <div class="stack">${gen.map(t=>`<button class="btn pri" data-act="gen" data-t="${t}" data-n="6">Ejercicios · ${esc(nomT(t))}</button>`).join('')}
+      ${mi.temas.map(t=>`<button class="btn" data-act="of-tema" data-t="${t}">Oficiales · ${esc(nomT(t))}</button>`).join('')}
+      ${next?`<button class="btn ghost" data-act="lec" data-g="${next}">Siguiente módulo: ${esc(GUIAS[next].titulo.replace(/^M\d+ · /,''))} →</button>`:''}</div></section>
+      <details class="card"><summary class="muted" style="cursor:pointer;min-height:36px;display:flex;align-items:center">Leer la guía completa de este módulo</summary><article class="guia">${GUIAS[g].html}</article></details>`;
+  }
+  const ultimo=lec.i>=n-1;
+  h+=`<div class="fixbar"><div class="wrap">${lec.i>0?'<button class="btn" data-act="lec-prev">← Atrás</button>':''}${ultimo?`<button class="btn pri" data-act="lec-salir">Terminar</button>`:'<button class="btn pri" data-act="lec-next">Siguiente →</button>'}</div></div>`;
+  return h;
+}
+const fcSabida=id=>{const f=S.formulas[id];return !!f&&f.o>=2&&f.o>f.k};
+function iniciarFc(){
+  const sc=id=>{const f=S.formulas[id];return !f?1:(fcSabida(id)?2:0)};
+  const ids=L.tarjetas.map(t=>({id:t.id,s:sc(t.id),r:Math.random()})).sort((a,b)=>a.s-b.s||a.r-b.r).slice(0,12).map(x=>x.id);
+  fc={ids,i:0,flip:false,ok:0,ko:0,fin:false,mal:[]};vista='guias';lec=null;guia=null;render();
+}
+function htmlFc(){
+  if(fc.fin){
+    return `<div class="lec-top"><button class="btn sm ghost" data-act="fc-salir">← Aprende</button><span class="lbl">Tarjetas · resultado</span></div>
+      <section class="card"><div class="count"><span class="n">${fc.ok}/${fc.ids.length}</span><span class="u">las sabías</span></div>${bar(fc.ok/fc.ids.length,'ok')}
+      ${fc.mal.length?`<span class="lbl">Para repasar</span><div class="list">${fc.mal.map(id=>{const t=L.tarjetas.find(x=>x.id===id);return `<button class="item" data-act="lec" data-g="${t.m}"><span><b>${esc(t.q)}</b><br><span class="small muted">${esc(t.a)}</span></span><span class="chip on">lección</span></button>`}).join('')}</div>`:'<p class="muted">¡Todas bien! Volverán con menos frecuencia.</p>'}
+      <button class="btn pri block" data-act="fc-ini">Otra ronda</button></section>`;
+  }
+  const t=L.tarjetas.find(x=>x.id===fc.ids[fc.i]);
+  return `<div class="lec-top"><button class="btn sm ghost" data-act="fc-salir">← Aprende</button><span class="lbl">Tarjetas · ${fc.i+1}/${fc.ids.length}</span></div>
+    <div class="segs">${fc.ids.map((_,k)=>`<i class="${k<fc.i?'done':(k===fc.i?'now':'')}"></i>`).join('')}</div>
+    <button class="flipc big ${fc.flip?'on':''}" data-act="fc-flip"><span class="in"><span class="face front"><span class="lbl">Pregunta</span><span class="fq">${esc(t.q)}</span><span class="small muted">Piensa la respuesta y toca para verla</span></span><span class="face back"><span class="lbl">Respuesta</span><span class="fq">${esc(t.a)}</span></span></span></button>
+    ${fc.flip?`<div class="fixbar"><div class="wrap"><button class="btn" data-act="fc-ko">Repasar</button><button class="btn pri" data-act="fc-ok">La sabía</button></div></div>`:''}`;
+}
 function htmlGuias(){
   const pr=Object.fromEntries(prioridades().map(x=>[x.t,x]));
-  let h=`<h1>Guías</h1><p class="muted">El camino en 10 módulos, ordenado por cuántos puntos hay en juego.</p><div class="card"><div class="list">`;
-  D.modulos.forEach(m=>{const j=m.temas.reduce((a,t)=>a+(pr[t]?pr[t].juego:0),0);
-    h+=`<button class="item" data-act="guia" data-g="${m.guia}"><span><b>${esc(GUIAS[m.guia].titulo)}</b><br><span class="small muted">~${j.toFixed(1)} preguntas en juego</span></span><span class="muted">›</span></button>`});
-  h+=`</div></div><h2>Para repasar</h2><div class="card"><div class="list">`;
-  ['investigacion','estrategia','formulas','diagnostico'].forEach(g=>h+=`<button class="item" data-act="guia" data-g="${g}"><b>${esc(GUIAS[g].titulo)}</b><span class="muted">›</span></button>`);
-  return h+`</div></div>`;
-}
-function htmlGuia(){
-  const g=GUIAS[guia],m=D.modulos.find(x=>x.guia===guia);
-  let h=`<div class="sesion-top"><button class="btn sm" data-act="guia-atras">← Guías</button><span></span></div><article class="card guia">${g.html}</article>`;
-  if(m){
-    h+=`<section class="card"><span class="lbl">Practica este módulo</span><div class="stack">`;
-    m.temas.forEach(t=>{
-      if(D.gens.includes(t))h+=`<button class="btn pri" data-act="gen" data-t="${t}" data-n="6">Ejercicios · ${esc(nomT(t))}</button>`;
-      h+=`<button class="btn" data-act="of-tema" data-t="${t}">Oficiales · ${esc(nomT(t))}</button>`});
-    h+=`</div></section>`;
-  }
+  const mods=D.modulos.map(m=>({m,j:m.temas.reduce((a,t)=>a+(pr[t]?pr[t].juego:0),0),pg:progMod(m.guia)}));
+  const empez=mods.filter(x=>x.pg>0&&x.pg<1).sort((a,b)=>(S.guias[b.m.guia].v||0)-(S.guias[a.m.guia].v||0))[0];
+  const sugerido=empez||mods.filter(x=>x.pg<1).sort((a,b)=>b.j-a.j)[0];
+  const saben=L.tarjetas.filter(t=>fcSabida(t.id)).length;
+  let h=`<h1>Aprende</h1><p class="muted">Lecciones cortas: lee la idea, mira un ejemplo paso a paso, ponte a prueba y practica.</p>`;
+  if(sugerido)h+=`<section class="hero" style="gap:10px"><span class="lbl">${empez?'Continúa donde quedaste':'Te recomiendo empezar por'}</span><h2 style="font-size:1.5rem">${esc(GUIAS[sugerido.m.guia].titulo)}</h2><p class="dim">${esc(L.lecciones[sugerido.m.guia].resumen)}</p>
+    <button class="btn" style="background:#fff;color:#1E36A6;border-color:#fff;font-weight:600;margin-top:6px" data-act="lec" data-g="${sugerido.m.guia}">${empez?'Continuar':'Empezar lección'} →</button></section>`;
+  h+=`<h2>Ruta de aprendizaje</h2><div class="stack" style="gap:12px">${mods.slice().sort((a,b)=>b.j-a.j).map(x=>{const g=x.m.guia,lc=L.lecciones[g],hecho=progMod(g)>=1;
+    return `<button class="mod ${hecho?'hecho':''}" data-act="lec" data-g="${g}"><span class="num">${hecho?'✓':x.m.id}</span><b>${esc(GUIAS[g].titulo.replace(/^M\d+ · /,''))}</b><span class="rs">${esc(lc.resumen)}</span>
+      <span class="meta">${bar(progMod(g),hecho?'ok':'')}<span style="flex:none">${lc.min} min</span>${x.j>=1?`<span class="chip warn" style="flex:none">~${x.j.toFixed(1)} en juego</span>`:''}</span></button>`}).join('')}</div>`;
+  h+=`<section class="card"><span class="lbl">Tarjetas de fórmulas</span><h2>${saben}/${L.tarjetas.length} dominadas</h2><p class="muted small">Piensa la respuesta antes de voltear la tarjeta. Las que no sabes vuelven primero.</p>${bar(saben/L.tarjetas.length,'ok')}<button class="btn pri block" data-act="fc-ini">Estudiar tarjetas</button></section>`;
+  h+=`<h2>Para leer</h2><div class="card"><div class="list">${['investigacion','estrategia','formulas','diagnostico'].map(g=>`<button class="item" data-act="guia" data-g="${g}"><b>${esc(GUIAS[g].titulo)}</b><span class="muted">›</span></button>`).join('')}</div></div>`;
   return h;
+}
+function htmlDoc(){
+  const g=GUIAS[guia];
+  return `<div class="lec-top"><button class="btn sm ghost" data-act="guia-atras">← Aprende</button></div><article class="card guia">${g.html}</article>`;
 }
 
 /* ───────── render y eventos ───────── */
 function render(keep){
   const m=$('#main');
-  if(!D){return}
+  if(!D)return;
   let h;
   if(sesion)h=htmlSesion();
   else if(ens)h=ens.res?htmlEnsayoRes():htmlEnsayo();
-  else if(guia)h=htmlGuia();
+  else if(lec)h=htmlLec();
+  else if(fc)h=htmlFc();
+  else if(guia)h=htmlDoc();
   else h=({hoy:htmlHoy,practicar:htmlPracticar,repaso:htmlRepaso,progreso:htmlProgreso,guias:htmlGuias})[vista]();
+  m.className=(keep?'':'anim ')+(h.indexOf('class="fixbar"')>=0?'conbar':'');
   m.innerHTML=h;
-  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===vista&&!sesion&&!ens&&!guia));
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===vista&&!sesion&&!ens));
   badge();if(!keep)window.scrollTo(0,0);
 }
-function irA(v){clearInterval(timer);vista=v;sesion=null;ens=null;guia=null;if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);render()}
+function irA(v){clearInterval(timer);vista=v;sesion=null;ens=null;guia=null;lec=null;fc=null;if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);render()}
 window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(VISTAS.includes(v)&&v!==vista)irA(v)});
 
 document.addEventListener('click',ev=>{
@@ -735,17 +880,39 @@ document.addEventListener('click',ev=>{
       ens.resp={};[...txt].forEach((c,k)=>{if('ABCDE'.includes(c)&&orden[k]&&nums.includes(orden[k]))ens.resp[orden[k]]=c});
       const y=window.scrollY;render(true);window.scrollTo(0,y);break}
     case 'ens-calc':calcularEns();break;
-    case 'guia':guia=d.g;render();break;
+    case 'guia':guia=d.g;vista='guias';lec=null;fc=null;render();break;
     case 'guia-atras':guia=null;render();break;
-    case 'guia-mod':{const m=D.modulos.find(x=>x.temas.includes(d.t));if(m){vista='guias';guia=m.guia;render()}break}
+    case 'guia-mod':{const m=D.modulos.find(x=>x.temas.includes(d.t));if(m)abrirLec(m.guia);break}
+    case 'lec':abrirLec(d.g);break;
+    case 'lec-salir':lec=null;render();break;
+    case 'lec-next':lecIr(lec.i+1);break;
+    case 'lec-prev':lecIr(lec.i-1);break;
+    case 'lec-ir':lecIr(+d.k);break;
+    case 'lec-rev':{lec.rev++;const y=window.scrollY;render(true);window.scrollTo(0,y);break}
+    case 'lec-flip':{const k=+d.k;if(lec.flip.has(k))lec.flip.delete(k);else lec.flip.add(k);const y=window.scrollY;render(true);window.scrollTo(0,y);break}
+    case 'lec-otro':{const p=pasosDe(lec.g)[lec.i];nuevoMini(p);render(true);break}
+    case 'lec-resp':{const mn=lec&&lec.mini;if(!mn||mn.resp!==null)break;const e=mn.ej,i=+d.i,ok=i===e.c;mn.resp=i;
+      registrarPractica(e.t,ok);regSub(e.t,e.s,ok);logResp(0,e.t,e.s,ok,null);if(!ok)abrirCarta(e.t,e.s,e.n,false);save();const y=window.scrollY;render(true);window.scrollTo(0,y);break}
+    case 'fc-ini':iniciarFc();break;
+    case 'fc-salir':fc=null;render();break;
+    case 'fc-flip':fc.flip=!fc.flip;render(true);break;
+    case 'fc-ok':case 'fc-ko':{const id=fc.ids[fc.i],f=S.formulas[id]||(S.formulas[id]={o:0,k:0,t:0}),ok=d.act==='fc-ok';
+      if(ok){f.o++;fc.ok++}else{f.k++;fc.ko++;fc.mal.push(id)}f.t=Date.now();save();fc.i++;fc.flip=false;if(fc.i>=fc.ids.length)fc.fin=true;render();break}
+    case 'bk-copy':{const txt=JSON.stringify(S);bk={txt,msg:'Copiado. Pégalo en un lugar seguro (notas o correo).'};
+      try{navigator.clipboard.writeText(txt).then(()=>{},()=>{bk.msg='No pude copiar solo: selecciona y copia el texto.'})}catch(e){bk.msg='Selecciona y copia el texto.'}render(true);break}
+    case 'bk-open':bk={restore:true};render(true);break;
+    case 'bk-restore':{try{const o=JSON.parse(($('#bktxt')||{}).value||'');if(!o||typeof o!=='object'||!Array.isArray(o.ensayos)||typeof o.errores!=='object')throw new Error('x');
+        bk={restore:true,pend:o,msg:`Se reemplazará tu progreso por: ${Object.keys(o.errores).length} errores, ${(o.hist||[]).length} respuestas y ${o.ensayos.length} ensayo(s).`}}catch(e){bk={restore:true,msg:'Ese texto no parece un respaldo válido.'}}render(true);break}
+    case 'bk-confirm':{if(bk&&bk.pend){S=normaliza(bk.pend);S.ts=Date.now();save();bk=null;render()}break}
+    case 'bk-cancel':bk=null;render(true);break
   }
 });
 
 /* ───────── arranque ───────── */
 async function cargar(){
   try{
-    const [d,e,g]=await Promise.all(['datos.json','ejercicios.json','guias.json'].map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(f);return r.json()})));
-    D=d;GUIAS=g;e.forEach(x=>{(POOL[x.t+'|'+x.n]=POOL[x.t+'|'+x.n]||[]).push(x)});
+    const [d,e,g,lc]=await Promise.all(['datos.json','ejercicios.json','guias.json','lecciones.json'].map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(f);return r.json()})));
+    D=d;GUIAS=g;L=lc;e.forEach(x=>{(POOL[x.t+'|'+x.n]=POOL[x.t+'|'+x.n]||[]).push(x)});
     D.banco.forEach(q=>BQ[q.i]=q);
     e.forEach(x=>{const a=x.t+'|'+x.s;(POOLSUB[a]=POOLSUB[a]||[]).push(x);(POOLSUB[a+'|'+x.n]=POOLSUB[a+'|'+x.n]||[]).push(x)});
     S=leerLocal()||estadoInicial();setSync(false);$('#synctxt').textContent='solo en este teléfono';
@@ -754,6 +921,13 @@ async function cargar(){
     $('#main').innerHTML=`<div class="card"><h2 class="err">No se pudieron cargar los datos</h2><p class="muted">Revisa tu conexión e inténtalo de nuevo.</p><button class="btn pri" onclick="location.reload()">Reintentar</button></div>`;
   }
 }
+let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{const t=e.changedTouches[0];tx=t.clientX;ty=t.clientY},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!lec||sesion||ens||e.target.closest('.tw,textarea,.chart'))return;
+  const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+  if(Math.abs(dx)>80&&Math.abs(dy)<45){if(dx<0&&lec.i<pasosDe(lec.g).length-1)lecIr(lec.i+1);else if(dx>0&&lec.i>0)lecIr(lec.i-1)}
+},{passive:true});
 cargar();
 })();
 </script>

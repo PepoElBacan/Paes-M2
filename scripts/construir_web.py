@@ -23,6 +23,7 @@ from sistema import banco as B  # noqa: E402
 from sistema import camino as C  # noqa: E402
 from sistema import generadores as G  # noqa: E402
 from sistema.taxonomia import TEMAS  # noqa: E402
+from lecciones import LECCIONES, TARJETAS  # noqa: E402
 
 WEB = RAIZ / "web"
 POR_NIVEL = 22     # ejercicios únicos por (generador, nivel)
@@ -217,7 +218,9 @@ def main():
         txt = limpiar_guia((RAIZ / "docs" / archivo).read_text())
         guias[clave] = {"titulo": titulo, "html": md_a_html(txt)}
     (WEB / "guias.json").write_text(json.dumps(guias, ensure_ascii=False, separators=(",", ":")))
-    for f in ("ejercicios", "datos", "guias"):
+    (WEB / "lecciones.json").write_text(json.dumps({"lecciones": LECCIONES,
+        "tarjetas": [{"id": a, "m": b, "q": c, "a": d} for a, b, c, d in TARJETAS]}, ensure_ascii=False, separators=(",", ":")))
+    for f in ("ejercicios", "datos", "guias", "lecciones"):
         print(f"web/{f}.json  {(WEB / (f + '.json')).stat().st_size / 1024:.0f} KB")
     print(f"{len(pool)} ejercicios en el pool")
 
