@@ -12,7 +12,7 @@ async function nuevaPagina(browser, store, opts = {}) {
   await ctx.exposeFunction('__dbList', pre => Object.keys(store).filter(k => k.startsWith(pre)).map(k => ({ id: k.slice(pre.length), d: store[k] })));
   await ctx.addInitScript(([local]) => {
     if (local && !localStorage.getItem('paesm2-estado-v1')) localStorage.setItem('paesm2-estado-v1', local);
-    const mk = path => ({ get: async () => { const v = await window.__dbGet(path); return { exists: v !== null, data: () => v, metadata: { fromCache: false, hasPendingWrites: false } }; },
+    const mk = path => ({ get: async () => { const v = await window.__dbGet(path); return { exists: v !== null, data: () => (v === null ? v : (function df(o){ Object.freeze(o); Object.values(o).forEach(x => x && typeof x === 'object' && df(x)); return o; })(v)), metadata: { fromCache: false, hasPendingWrites: false } }; },
       set: async d => { await window.__dbSet(path, JSON.parse(JSON.stringify(d))); }, onSnapshot: () => () => {},
       collection: n => ({ doc: i => mk(path + '/' + n + '/' + i), get: async () => ({ docs: (await window.__dbList(path + '/' + n + '/')).map(x => ({ id: x.id, data: () => x.d })) }) }) });
     window.claude = { use: async n => n === 'user' ? { id: async () => 'u_test' } : n === 'db' ? { doc: mk } : null };

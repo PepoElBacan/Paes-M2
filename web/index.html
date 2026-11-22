@@ -282,7 +282,7 @@ function escribirLocal(){
 }
 
 /* Guardado en tu cuenta: leer → combinar → escribir. Nunca se escribe antes de haber leído la nube con éxito. */
-let tmr=null,enCurso=false,pend=false,nubeLista=false,ultSync=0,estadoSync='conectando',riquezaNube=0,ultRespaldoDia='',ultMejor=0,mejorRiq=0,unsub=null;
+let diagMsg='',tmr=null,enCurso=false,pend=false,nubeLista=false,ultSync=0,estadoSync='conectando',riquezaNube=0,ultRespaldoDia='',ultMejor=0,mejorRiq=0,unsub=null;
 const esperar=ms=>new Promise(r=>setTimeout(r,ms));
 const conTiempo=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('tiempo')),ms))]);
 const hhmm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
@@ -302,7 +302,7 @@ async function sincroniza(){
   try{
     const snap=await conTiempo(dbDoc.get(),12000);
     let remoto=null;
-    if(snap.exists){const c=snap.data();if(c&&c.estado)remoto=normaliza(c.estado)}
+    if(snap.exists){const c=snap.data();if(c&&c.estado)remoto=normaliza(clon(c.estado))}
     else if(snap.metadata&&snap.metadata.fromCache)throw new Error('sin confirmar');
     if(remoto){riquezaNube=riqueza(remoto);aplicar(mergeEstados(S,remoto))}
     if(riquezaNube>=8&&riqueza(S)<riquezaNube*.7){pintaSync('proteccion');enCurso=false;return}     // salvaguarda: nunca escribir algo mucho más pobre que lo que hay en la nube
@@ -310,7 +310,7 @@ async function sincroniza(){
     await conTiempo(dbDoc.set({estado:S,ts:S.ts}),12000);
     ultSync=Date.now();riquezaNube=riqueza(S);
     await respaldar();pintaSync('ok');
-  }catch(e){pintaSync('error');pend=true;setTimeout(()=>{if(pend)programar()},8000)}
+  }catch(e){diagMsg='Al guardar: '+((e&&(e.code||e.message))||String(e));pintaSync('error');pend=true;setTimeout(()=>{if(pend)programar()},8000)}
   enCurso=false;if(pend&&estadoSync!=='error')programar();
 }
 async function respaldar(){
@@ -327,16 +327,16 @@ async function conectarNube(){
       if(!window.claude||!window.claude.use){pintaSync('local');return}
       const [user,db]=await Promise.all([window.claude.use('user'),window.claude.use('db')]);
       if(!user||!db){pintaSync('local');return}
-      const uid=await user.id();if(!uid){pintaSync('local');return}
+      const uid=await conTiempo(user.id(),10000);if(!uid){pintaSync('local');return}
       const ref=db.doc('data/users/'+uid+'/progreso');
       const snap=await conTiempo(ref.get(),10000);
       if(!snap.exists&&snap.metadata&&snap.metadata.fromCache)throw new Error('sin confirmar');
       dbDoc=ref;
-      if(snap.exists){const c=snap.data();if(c&&c.estado){const remoto=normaliza(c.estado);riquezaNube=riqueza(remoto);aplicar(mergeEstados(S,remoto))}}
+      if(snap.exists){const c=snap.data();if(c&&c.estado){const remoto=normaliza(clon(c.estado));riquezaNube=riqueza(remoto);aplicar(mergeEstados(S,remoto))}}
       nubeLista=true;
       try{const mj=await conTiempo(ref.collection('respaldos').doc('mejor').get(),6000);if(mj.exists)mejorRiq=(mj.data()||{}).r||0}catch(e){}
       suscribir();programar();return;
-    }catch(e){dbDoc=null;pintaSync('conectando');await esperar(2500*(i+1))}
+    }catch(e){dbDoc=null;diagMsg='Al conectar (intento '+(i+1)+'): '+((e&&(e.code||e.message))||String(e));pintaSync('conectando');await esperar(2500*(i+1))}
   }
   if(!nubeLista)pintaSync('local');
 }
@@ -345,7 +345,7 @@ function suscribir(){
   try{unsub=dbDoc.onSnapshot(snap=>{
     if(!snap.exists||(snap.metadata&&snap.metadata.hasPendingWrites))return;
     const c=snap.data();if(!c||!c.estado)return;
-    const remoto=normaliza(c.estado),m=mergeEstados(S,remoto);
+    const remoto=normaliza(clon(c.estado)),m=mergeEstados(S,remoto);
     riquezaNube=riqueza(remoto);
     const cambio=aplicar(m);
     if(canon(m)!==canon(remoto))programar();else if(cambio)escribirLocal();
@@ -751,6 +751,7 @@ function htmlResumen(){
     <p class="small"><b>${{ok:'Guardado en tu cuenta',guardando:'Guardando…',conectando:'Conectando con tu cuenta…',error:'Sin conexión: guardado en el teléfono, se sube solo cuando vuelva',proteccion:'Protección activa: revisa tus respaldos',local:'Solo en este teléfono'}[estadoSync]||''}</b>${ultSync?` · última vez ${hhmm(ultSync)}`:''}${almacenOk?'':' · tu navegador no deja guardar en el teléfono'}</p>
     <p class="small muted">Cada guardado combina lo del teléfono con lo de tu cuenta, así que un dispositivo vacío o desactualizado nunca borra tu avance. Además se hace un respaldo diario en tu cuenta.</p>
     <div class="row"><button class="btn sm pri" data-act="sync-ahora">Guardar ahora</button><button class="btn sm" data-act="resp-ver">Respaldos en mi cuenta</button></div>
+    ${diagMsg&&estadoSync!=='ok'?`<p class="small" style="color:var(--bad)">Diagnóstico: ${esc(diagMsg)}</p>`:''}
     ${respMsg?`<p class="small">${esc(respMsg)}</p>`:''}
     ${respList?`<div class="list">${respList.lista.length?respList.lista.map((x,i)=>`<div class="item"><span><b>${esc(x.id==='mejor'?'El mejor respaldo':fmtF(x.id))}</b><br><span class="small muted">${x.r} registros · ${x.ts?hhmm(x.ts):''}</span></span><button class="btn sm" data-act="resp-rest" data-i="${i}">Recuperar</button></div>`).join(''):'<p class="small muted">Todavía no hay respaldos.</p>'}</div>`:''}
     <div class="row"><button class="btn sm" data-act="bk-copy">Copiar respaldo</button><button class="btn sm" data-act="bk-open">Restaurar desde texto…</button></div>
