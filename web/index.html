@@ -203,6 +203,13 @@ details.meta summary{list-style:none;cursor:pointer} details.meta summary::-webk
 .sw{display:flex;gap:8px;flex-wrap:wrap}
 .sw button{min-height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font:500 .8125rem var(--mono)}
 .sw button.cur{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.evrow{display:grid;grid-template-columns:1fr 96px;gap:4px 12px;align-items:center;text-align:left;width:100%;padding:14px 2px;border:0;border-bottom:1px solid var(--line);background:none;border-radius:0}
+.evrow .tt{min-width:0} .evrow .tt b{display:block;font-weight:600;font-size:.9375rem;line-height:1.25} .evrow .code{font:500 .6875rem var(--mono);color:var(--accent)}
+.evrow svg{width:96px;height:30px;overflow:visible;grid-row:1/3;grid-column:2}
+.evrow .sub{grid-column:1;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.75rem;color:var(--ink2)}
+.spark{fill:none;stroke:var(--accent);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round} .spark-d{fill:var(--accent)} .spark-e{fill:var(--surface);stroke:var(--accent);stroke-width:1.5}
+.chart .mk.ens{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.accdots{display:inline-flex;gap:3px} .accdots i{width:8px;height:8px;border-radius:50%;background:var(--ok)} .accdots i.x{background:var(--bad)}
 .ln1{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:.875rem}
 </style>
 
@@ -732,9 +739,9 @@ function htmlRepaso(){
 /* progreso y ensayos */
 let progTab='resumen';
 function htmlProgreso(){
-  const tabs=[['resumen','Resumen'],['fortalezas','Fortalezas'],['evolucion','Evolución'],['historial','Historial']];
+  const tabs=[['resumen','Resumen'],['temas','Por tema'],['fortalezas','Fortalezas'],['evolucion','Evolución'],['historial','Historial']];
   return `<h1>Progreso</h1><div class="sw">${tabs.map(t=>`<button class="${progTab===t[0]?'cur':''}" data-act="ptab" data-p="${t[0]}">${t[1]}</button>`).join('')}</div>`+
-    ({resumen:htmlResumen,fortalezas:htmlFortalezas,evolucion:htmlEvolucion,historial:htmlHistorial})[progTab]();
+    ({resumen:htmlResumen,temas:htmlTemas,fortalezas:htmlFortalezas,evolucion:htmlEvolucion,historial:htmlHistorial})[progTab]();
 }
 function htmlResumen(){
   const pr=prioridades(),max=Math.max(...pr.map(x=>x.juego),1);
@@ -800,6 +807,57 @@ function svgBarras(pts){
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Porcentaje de aciertos por día">${g}</svg>`;
 }
 function tablaVista(cab,filas){return `<details class="tabla"><summary>Ver como tabla</summary><div class="tw"><table><thead><tr>${cab.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${filas.map(f=>`<tr>${f.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
+/* ───────── Evolución por tema ───────── */
+let evTema=null;
+function serieTema(t){
+  const pts=[];
+  S.ensayos.forEach(en=>{const x=en.por_tema&&en.por_tema[t];if(x&&x[1])pts.push({f:en.fecha,acc:x[0]/x[1],a:x[0],n:x[1],e:true,lab:en.prueba})});
+  const por={};S.hist.forEach(h=>{if(h[1]!==t)return;const d=por[h[0]]||(por[h[0]]=[0,0]);d[0]+=h[4];d[1]++});
+  Object.keys(por).forEach(f=>pts.push({f,acc:por[f][0]/por[f][1],a:por[f][0],n:por[f][1],e:false,lab:'práctica'}));
+  pts.sort((a,b)=>a.f.localeCompare(b.f)||(b.e?1:0)-(a.e?1:0));
+  return pts;
+}
+function resumenTema(t){
+  let ea=0,en_=0;S.ensayos.forEach(en=>{const x=en.por_tema&&en.por_tema[t];if(x){ea+=x[0];en_+=x[1]}});
+  const rec=S.hist.filter(h=>h[1]===t).slice(-10),ra=rec.reduce((a,h)=>a+h[4],0);
+  const base=en_?ea/en_:null,ahora=rec.length?ra/rec.length:null;
+  return {base,bn:en_,ahora,an:rec.length,total:S.hist.filter(h=>h[1]===t).length,delta:(base!==null&&ahora!==null&&rec.length>=3)?ahora-base:null};
+}
+function svgSpark(pts){
+  if(!pts.length)return '';const W=96,H=30,n=pts.length,X=i=>n===1?W/2:3+i*(W-6)/(n-1),Y=v=>H-3-v*(H-6);
+  const d=pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.acc).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><line x1="0" x2="${W}" y1="${Y(.5)}" y2="${Y(.5)}" stroke="var(--line)" stroke-width="1"/>${n>1?`<path class="spark" d="${d}"/>`:''}${pts.map((p,i)=>`<circle class="${p.e?'spark-e':'spark-d'}" cx="${X(i).toFixed(1)}" cy="${Y(p.acc).toFixed(1)}" r="${i===n-1?3.2:2.4}"/>`).join('')}</svg>`;
+}
+function svgPct(pts){
+  const W=340,H=160,L=36,R=12,T=14,B=28,n=pts.length;if(!n)return '';
+  const X=i=>n===1?(L+W-R)/2:L+i*(W-L-R)/(n-1),Y=v=>T+(1-v)*(H-T-B);
+  let g=[0,.5,1].map(v=>`<line class="grid" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${v*100}%</text>`).join('');
+  if(n>1)g+=`<path class="ln" d="${pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.acc).toFixed(1)).join(' ')}"/>`;
+  pts.forEach((p,i)=>{g+=`<circle class="mk ${p.e?'ens':''}" cx="${X(i)}" cy="${Y(p.acc)}" r="4.5"/><circle class="hit" cx="${X(i)}" cy="${Y(p.acc)}" r="15" data-tip="${esc(`${p.e?'Ensayo '+p.lab:'Práctica'} · ${fmtF(p.f)} · ${p.a} de ${p.n} (${Math.round(100*p.acc)} %)`)}"/><text x="${X(i)}" y="${H-10}" text-anchor="middle">${esc(fmtF(p.f).slice(4))}</text>`});
+  const u=pts[n-1];g+=`<text x="${X(n-1)}" y="${Y(u.acc)-10}" text-anchor="end" style="fill:var(--ink)">${Math.round(100*u.acc)}%</text>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Porcentaje de acierto del tema en el tiempo">${g}</svg>`;
+}
+function htmlTemas(){
+  const pr=prioridades();
+  const filas=pr.map(x=>({x,r:resumenTema(x.t),pts:serieTema(x.t)})).filter(f=>f.pts.length);
+  let h=`<section class="card"><span class="lbl">Evolución por tema</span><p class="small muted">Cada línea es el porcentaje de acierto del tema: círculo vacío = ensayo, círculo lleno = tu práctica de ese día. Ordenado por lo que más te conviene reforzar. Toca un tema para ver el detalle.</p>
+    <div>${filas.map(({x,r,pts})=>{
+      const d=r.delta===null?'':`<span class="chip ${r.delta>=.1?'ok':(r.delta<=-.1?'bad':'')}">${r.delta>=0?'▲':'▼'} ${Math.abs(Math.round(100*r.delta))} pts</span>`;
+      const abierto=evTema===x.t;
+      return `<button class="evrow" data-act="ev-tema" data-t="${x.t}" aria-expanded="${abierto}"><span class="tt"><span class="code">${x.t}</span><b>${esc(nomT(x.t))}</b></span>${svgSpark(pts)}
+        <span class="sub">${r.base!==null?`Ensayo ${Math.round(100*r.base)} %`:'Sin ensayo'} → ${r.ahora!==null?`<b style="color:var(--ink)">ahora ${Math.round(100*r.ahora)} %</b> (${r.an} resp.)`:'aún sin práctica'} ${d}</span></button>${abierto?htmlDetalleTema(x.t,pts,r):''}`}).join('')||'<p class="muted small">Todavía no hay datos por tema.</p>'}</div></section>`;
+  return h;
+}
+function htmlDetalleTema(t,pts,r){
+  const subs=debiles().filter(x=>x.t===t&&x.n>0);
+  const ult=S.hist.filter(h=>h[1]===t).slice(-12);
+  return `<div class="card" style="margin:8px 0 14px;gap:10px"><span class="lbl">${esc(nomT(t))} · detalle</span>${svgPct(pts)}
+    ${tablaVista(['Fecha','Tipo','Aciertos','%'],pts.map(p=>[fmtF(p.f),p.e?'Ensayo '+p.lab:'Práctica',p.a+'/'+p.n,Math.round(100*p.acc)+' %']))}
+    <p class="small muted">${r.total} respuestas guardadas de práctica · ${r.bn?`ensayos: ${Math.round(100*r.base)} % (${r.bn} preguntas)`:'sin ensayo de este tema'}</p>
+    ${ult.length?`<div><span class="small muted">Últimas respuestas: </span><span class="accdots">${ult.map(h=>`<i class="${h[4]?'':'x'}" title="${esc(etS(h[1],h[2]))}"></i>`).join('')}</span></div>`:''}
+    ${subs.length?`<div><span class="lbl">Por subtema</span><div class="stack" style="gap:10px;margin-top:8px">${subs.map(z=>`<div class="tema" style="gap:4px"><div class="h"><span class="small"><b>${esc(etS(z.t,z.s))}</b></span><b class="mono">${z.n-z.e}/${z.n}</b></div>${bar((z.n-z.e)/z.n,(z.n-z.e)/z.n>=.75?'ok':'bad')}</div>`).join('')}</div></div>`:''}
+    <div class="row"><button class="btn sm pri" data-act="gen" data-t="${t}" data-n="6">Practicar este tema</button>${D.modulos.find(m=>m.temas.includes(t))?`<button class="btn sm" data-act="guia-mod" data-t="${t}">Lección</button>`:''}</div></div>`;
+}
 function htmlEvolucion(){
   const ens=S.ensayos.filter(e=>e.puntaje).map(e=>({x:fmtF(e.fecha).slice(4),y:e.puntaje,tip:`${e.prueba} · ${e.correctas}/${e.puntuables} · ${e.puntaje} pts`,e}));
   const dias=Object.keys(S.dias).sort().slice(-14).map(f=>{const d=S.dias[f];return {x:fmtF(f).slice(4),y:Math.round(100*d[1]/d[0]),tip:`${fmtF(f)} · ${d[1]} de ${d[0]} (${Math.round(100*d[1]/d[0])} %)`,f,d}});
@@ -1015,6 +1073,7 @@ document.addEventListener('click',ev=>{
     case 'prueba-skip':{const s=sesion;if(!s||s.fin)break;s.i++;if(s.i>=s.n)finPrueba();else render();break}
     case 'prueba-fin':finPrueba();break;
     case 'ptab':progTab=d.p;render(true);break;
+    case 'ev-tema':{evTema=evTema===d.t?null:d.t;const y=window.scrollY;render(true);window.scrollTo(0,y);break}
     case 'meta':S.ajustes.meta=+d.m;S.ajustes.u=Date.now();save();render(true);break;
     case 'conf-toggle':S.ajustes.conf=!S.ajustes.conf;S.ajustes.u=Date.now();save();render(true);break;
     case 'ens-ini':iniciarEns();break;
