@@ -170,7 +170,7 @@ def tasas_tema(est, banco):
     return {f["tema"]: f["tasa_error"] for f in prioridades(est, banco)}
 
 
-def registrar_gen(est, ej, ok, carta=None):
+def registrar_gen(est, ej, ok, carta=None, sin_carta=False):
     """Registra un ejercicio generado: nivel del tema, subtema y, si falló, tarjeta de refuerzo."""
     t, sb = ej["tema"], ej["subtema"]
     subio = E.registrar_practica(est, t, ok)
@@ -182,7 +182,7 @@ def registrar_gen(est, ej, ok, carta=None):
             print("   ✓ ¡Subtema dominado! Sale de tu refuerzo." if c["dominada"] else f"   Racha {c['racha']}/3 · vuelve el {c['proximo']}")
         else:
             print(f"   Vuelve mañana ({c['proximo']}) con otro ejercicio de este subtema.")
-    elif not ok:
+    elif not ok and not sin_carta:
         R.abrir_carta(est, t, sb, ej["nivel"])
         print("   ↻ Mañana te pongo otro ejercicio de este subtema (refuerzo).")
     if subio:
@@ -347,6 +347,22 @@ def cmd_repaso(args):
         qid = x
         q = ids[qid]
         e = est["errores"][qid]
+        if not args.misma and q["tema"] in G.GENERADORES:
+            # un ejercicio NUEVO del mismo tema: el resultado actualiza el calendario de tu error original
+            sb = q["subtema"] if q["subtema"] in R.subtemas_gen().get(q["tema"], set()) else None
+            ej = G.ejercicio(q["tema"], max(2, E.tema_estado(est, q["tema"])["nivel"]), subtema=sb)
+            mostrar_ejercicio(ej, f"(repaso de tu error {B.etiqueta(q)}: otro ejercicio del mismo tema) ")
+            r = leer("   Tu respuesta (A-D, Enter = saltar, q = salir): ")
+            if r is None or r.lower() == "q":
+                break
+            if not r:
+                continue
+            ok = corregir_ejercicio(ej, LETRAS.index(r.upper()) if r.upper() in tuple(LETRAS) else None)
+            registrar_gen(est, ej, ok, sin_carta=True)
+            e = E.registrar_intento(est, qid, ok, sin_oficial=True)
+            print(f"   Tu error {B.etiqueta(q)}: " + ("¡DOMINADO!" if e["dominada"] else (f"racha {e['racha']}/3 · vuelve {e['proximo']}" if ok else f"vuelve mañana ({e['proximo']})")))
+            E.guardar(est)
+            continue
         print(f"▶ {B.etiqueta(q)}  ({q['prueba_etiqueta']})  → {q['pdf']}  pág. {q['pagina_pdf']}")
         print(f"   Tema: {q['tema']} · {q['descripcion']}" + (f"   [{e['nota']}]" if e["nota"] else ""))
         if q["eliminada"] or not q["clave"]:
@@ -599,6 +615,7 @@ def main(argv=None):
     p = sub.add_parser("repaso", help="repaso espaciado de tus errores oficiales")
     p.add_argument("-n", type=int, default=8)
     p.add_argument("--imagen", action="store_true", help="renderiza la página del PDF como PNG")
+    p.add_argument("--misma", action="store_true", help="repasar la misma pregunta oficial en vez de un ejercicio nuevo del mismo tema")
     p.set_defaults(f=cmd_repaso)
     p = sub.add_parser("gemelas", help="preguntas oficiales parecidas: por tema (ALG-cua) o por pregunta (I2026-28)")
     p.add_argument("objetivo")

@@ -44,12 +44,13 @@ def agregar_error(est, qid, nota="", racha=0, ultimo=None, proximo=None):
     return e
 
 
-def registrar_intento(est, qid, ok, fecha=None):
+def registrar_intento(est, qid, ok, fecha=None, sin_oficial=False):
     fecha = fecha or hoy()
     e = est["errores"].setdefault(qid, {"racha": 0, "intentos": 0, "ultimo": None, "proximo": fecha.isoformat(), "dominada": False, "nota": ""})
     e["intentos"] += 1
     e["ultimo"] = fecha.isoformat()
-    est.setdefault("oficiales", {})[qid] = {"ok": bool(ok), "f": fecha.isoformat()}
+    if not sin_oficial:
+        est.setdefault("oficiales", {})[qid] = {"ok": bool(ok), "f": fecha.isoformat()}
     if ok:
         e["racha"] += 1
         if e["racha"] >= 3:

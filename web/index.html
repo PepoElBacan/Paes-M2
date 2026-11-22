@@ -242,7 +242,7 @@ if(!VISTAS.includes(vista))vista='hoy';
 
 /* ───────── estado y persistencia ───────── */
 function estadoInicial(){const s=JSON.parse(JSON.stringify(D.semilla));s.ts=0;return normaliza(s)}
-function normaliza(s){s.temas=s.temas||{};s.errores=s.errores||{};s.ensayos=s.ensayos||[];s.oficiales=s.oficiales||{};s.sub=s.sub||{};s.cartas=s.cartas||{};s.hist=s.hist||[];s.guias=s.guias||{};s.formulas=s.formulas||{};s.dias=s.dias||{};s.ajustes=Object.assign({conf:true,meta:800},s.ajustes||{});s.ts=s.ts||0;return s}
+function normaliza(s){s.temas=s.temas||{};s.errores=s.errores||{};s.ensayos=s.ensayos||[];s.oficiales=s.oficiales||{};s.sub=s.sub||{};s.cartas=s.cartas||{};s.hist=s.hist||[];s.guias=s.guias||{};s.formulas=s.formulas||{};s.dias=s.dias||{};s.ajustes=Object.assign({conf:true,meta:800,repaso:'gen'},s.ajustes||{});s.ts=s.ts||0;return s}
 function leerLocal(){try{const t=localStorage.getItem(KEY);return t?normaliza(JSON.parse(t)):null}catch(e){return null}}
 function escribirLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let tmr=null,guardando=false,sucio=false;
@@ -286,12 +286,12 @@ function agregarError(id,nota){
   if(S.errores[id])return;
   S.errores[id]={racha:0,intentos:0,ultimo:null,proximo:sumaDias(hoy(),1),dominada:false,nota:nota||''};
 }
-function registrarIntento(id,ok){
+function registrarIntento(id,ok,sinOf){
   const f=hoy();const e=S.errores[id]||(S.errores[id]={racha:0,intentos:0,ultimo:null,proximo:f,dominada:false,nota:''});
   e.intentos++;e.ultimo=f;
   if(ok){e.racha++;if(e.racha>=3){e.dominada=true;e.proximo=null}else e.proximo=sumaDias(f,[1,3,7][e.racha])}
   else{e.racha=0;e.dominada=false;e.proximo=sumaDias(f,1)}
-  S.oficiales[id]={ok,f};save();return e;
+  if(!sinOf)S.oficiales[id]={ok,f};save();return e;
 }
 function pendientes(){
   const f=hoy();
@@ -468,8 +468,22 @@ function alert_(m){const d=document.createElement('div');d.className='fb neu';d.
 const itemsGen=(temas,n,lv)=>Array.from({length:n},(_,k)=>({k:'gen',t:temas[k%temas.length],lv:lv||0}));
 function itemsSub(k,n){const [t,sb]=k.split('|');return Array.from({length:n},()=>({k:'gen',t,s:sb,lv:0}))}
 function itemsCartas(max){return cartasPend().slice(0,max||99).map(k=>({k:'gen',t:S.cartas[k].t,s:S.cartas[k].s,lv:S.cartas[k].nivel,carta:k}))}
+function gemelaOf(q,usados){
+  let c=D.banco.filter(x=>x.t===q.t&&x.i!==q.i&&!x.el&&x.k&&!S.errores[x.i]&&!usados.has(x.i)&&(q.s==='general'||x.s===q.s));
+  if(!c.length)c=D.banco.filter(x=>x.t===q.t&&x.i!==q.i&&!x.el&&x.k&&!S.errores[x.i]&&!usados.has(x.i));
+  c.sort((a,b)=>(S.oficiales[a.i]?1:0)-(S.oficiales[b.i]?1:0)||D.orden.indexOf(a.p)-D.orden.indexOf(b.p)||a.n-b.n);
+  return c.length?c[0].i:null;
+}
+function variante(id,usados){
+  const q=BQ[id],modo=S.ajustes.repaso||'gen';
+  if(modo==='misma')return {k:'of',id};
+  if(modo==='gemela'){const g=gemelaOf(q,usados);if(g){usados.add(g);return {k:'of',id:g,orig:id}}}
+  const sb=POOLSUB[q.t+'|'+q.s]?q.s:undefined;
+  if(sb||POOL[q.t+'|2']||POOL[q.t+'|1'])return {k:'gen',t:q.t,s:sb,lv:Math.max(2,tEst(q.t).nivel),orig:id};
+  return {k:'of',id};
+}
 function itemsRepaso(){
-  const of=pendientes().map(id=>({k:'of',id})),ca=itemsCartas(),out=[],m=Math.max(of.length,ca.length);
+  const usados=new Set(),of=pendientes().map(id=>variante(id,usados)),ca=itemsCartas(),out=[],m=Math.max(of.length,ca.length);
   for(let i=0;i<m;i++){if(i<ca.length)out.push(ca[i]);if(i<of.length)out.push(of[i])}return intercalar(out);
 }
 function itemsRefuerzo(n){
@@ -495,10 +509,10 @@ function htmlSesion(){
   const confPanel=pedirConf?`<section class="card"><span class="lbl">¿Qué tan seguro estás de tu respuesta?</span><div class="lv">${CONFS.map((c,k)=>`<button data-act="conf" data-c="${k}">${c}</button>`).join('')}</div><p class="small muted">Así detecto los errores que cometes con seguridad: son los que más conviene corregir.</p></section>`:'';
   if(it.k==='gen'){
     const e=it.ej;
-    h+=`<section class="card"><span class="lbl">${prueba?`Pregunta ${s.i+1} de ${s.n}`:`${e.t} · ${esc(etS(e.t,e.s))} · nivel ${e.n}`}</span>${it.carta?'<div class="chips"><span class="chip on">refuerzo de un error anterior</span></div>':''}<p class="enun">${esc(e.q)}</p>
+    h+=`<section class="card"><span class="lbl">${prueba?`Pregunta ${s.i+1} de ${s.n}`:`${e.t} · ${esc(etS(e.t,e.s))} · nivel ${e.n}`}</span>${it.carta?'<div class="chips"><span class="chip on">refuerzo de un error anterior</span></div>':''}${it.orig?`<div class="chips"><span class="chip on">repaso de tu error ${esc(etq(BQ[it.orig]))} · ejercicio nuevo del mismo tema</span></div>`:''}<p class="enun">${esc(e.q)}</p>
       <div class="opts">${e.o.map((o,k)=>{let c='';if(resp){if(k===e.c)c='ok';else if(k===r)c='bad'}else if(s.sel===k)c='sel';
         return `<button class="opt ${c}" data-act="${prueba?'prueba-pick':'resp'}" data-i="${k}" ${resp?'disabled':''}><span class="bub">${LET[k]}</span><span class="t">${esc(o)}</span></button>`}).join('')}</div>
-      ${prueba?'<button class="btn sm" data-act="prueba-skip">Saltar</button>':''}</section>${confPanel}`;
+      ${prueba?'<button class="btn sm" data-act="prueba-skip">Saltar</button>':''}${it.orig&&!resp&&s.sel===null?'<button class="btn sm ghost" data-act="orig">Prefiero la pregunta original</button>':''}</section>${confPanel}`;
     if(resp){const ok=r===e.c;
       h+=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✓ Correcto':'✗ Era la '+LET[e.c]}</b>${!ok&&e.r[r]?`<span class="why">Tu opción: ${esc(e.r[r])}</span>`:''}${s.info?`<span class="why">${esc(s.info)}</span>`:''}${!ok&&s.conf===0?'<span class="why"><b>Error confiado:</b> te sorprendió; mira bien la solución.</span>':''}${s.subio?`<b>⬆ Subes a nivel ${tEst(e.t).nivel} en ${e.t}</b>`:''}</div>
         ${ok?'':htmlCausas()}<div class="sol"><b>Solución.</b> ${esc(e.e)}</div>${sig}`}
@@ -506,7 +520,7 @@ function htmlSesion(){
     const q=BQ[it.id],e=S.errores[q.i];
     h+=`<section class="card"><span class="lbl">${esc(s.titulo)}</span><h2>${esc(q.p)} · pregunta ${q.n}</h2>
       <p class="muted">${esc(nomT(q.t))}${q.s==='general'?'':' · '+esc(nomS(q.s))}<br><span class="small">${esc(q.d)}</span></p>
-      <div class="chips">${q.pl?'<span class="chip warn">piloto: no puntúa</span>':''}${e&&e.nota?`<span class="chip">${esc(e.nota)}</span>`:''}</div>
+      <div class="chips">${it.orig?`<span class="chip on">repaso de tu error ${esc(etq(BQ[it.orig]))} · otra pregunta oficial parecida</span>`:''}${q.pl?'<span class="chip warn">piloto: no puntúa</span>':''}${e&&e.nota?`<span class="chip">${esc(e.nota)}</span>`:''}</div>
       <a class="btn" href="${urlPdf(q)}" target="_blank" rel="noopener">Abrir la pregunta en el PDF · pág. ${q.g} ↗</a>
       <p class="small muted">${esc(D.pruebas[q.p].etq)}. Resuélvela en papel y marca tu alternativa.</p>
       <div class="letters">${LET.split('').map(l=>{let c='';if(resp){if(l===q.k)c='ok';else if(l===r)c='bad'}else if(s.sel===l)c='sel';
@@ -538,16 +552,25 @@ function finalizar(sel,conf){
     const e=it.ej,ok=sel===e.c,dudo=ok&&conf>0;let info='';
     s.resp=sel;if(ok)s.ok++;s.hist.push(ok?'ok':'bad');
     s.subio=registrarPractica(e.t,ok);regSub(e.t,e.s,ok);
-    if(it.carta){
+    if(it.orig){
+      const oq=etq(BQ[it.orig]);
+      if(dudo)info='Acertaste dudando: no avanza la racha de tu error '+oq+'; sigue en repaso.';
+      else{const eo=registrarIntento(it.orig,ok,true);info=ok?(eo.dominada?'¡Tu error '+oq+' quedó dominado!':`Racha ${eo.racha}/3 en tu error ${oq} · vuelve ${fmtF(eo.proximo)}`):`Tu error ${oq} vuelve mañana (${fmtF(eo.proximo)}) con otro ejercicio.`}
+    }else if(it.carta){
       if(dudo)info='Acertaste dudando: no avanza la racha; sigue en repaso.';
       else{resolverCarta(it.carta,ok);const c=S.cartas[it.carta];info=ok?(c.dominada?'¡Subtema dominado! Sale de tu refuerzo.':`Racha ${c.racha}/3 · vuelve ${fmtF(c.proximo)}`):`Vuelve mañana (${fmtF(c.proximo)}) con otro ejercicio.`}
       if(!ok&&conf===0)S.cartas[it.carta].confiado=true;
-    }else if(!ok){abrirCarta(e.t,e.s,e.n,conf===0);s.refs.add(e.t+'|'+e.s);info='Mañana te pongo otro ejercicio de este subtema.'}
-    else if(dudo){abrirCarta(e.t,e.s,e.n,false);s.refs.add(e.t+'|'+e.s);info='Acertaste dudando: lo repasas mañana para afirmarlo.'}
+    }else if(!ok&&!it.orig){abrirCarta(e.t,e.s,e.n,conf===0);s.refs.add(e.t+'|'+e.s);info='Mañana te pongo otro ejercicio de este subtema.'}
+    else if(dudo&&!it.orig){abrirCarta(e.t,e.s,e.n,false);s.refs.add(e.t+'|'+e.s);info='Acertaste dudando: lo repasas mañana para afirmarlo.'}
     s.info=info;s.ent=logResp(0,e.t,e.s,ok,conf);
   }else{
     const q=BQ[s.items[s.i].id],ok=sel===q.k,dudo=ok&&conf>0;s.resp=sel;if(ok)s.ok++;s.hist.push(ok?'ok':'bad');
-    if(S.errores[q.i]){
+    const orig=s.items[s.i].orig;
+    if(orig){
+      const oq=etq(BQ[orig]);S.oficiales[q.i]={ok,f:hoy()};
+      if(dudo)s.info='Acertaste dudando: no avanza la racha de tu error '+oq+'; sigue en repaso.';
+      else{const eo=registrarIntento(orig,ok,true);s.info=ok?(eo.dominada?'¡Tu error '+oq+' quedó dominado!':`Racha ${eo.racha}/3 en tu error ${oq} · vuelve ${fmtF(eo.proximo)}`):`Tu error ${oq} vuelve mañana (${fmtF(eo.proximo)}).`}
+    }else if(S.errores[q.i]){
       if(dudo){S.oficiales[q.i]={ok:true,f:hoy()};s.info='Acertaste dudando: no avanza la racha; sigue en repaso.'}
       else{const e=registrarIntento(q.i,ok);s.info=ok?(e.dominada?'¡Dominada! Sale de tu banco de errores.':`Racha ${e.racha}/3 · próximo repaso ${fmtF(e.proximo)}`):`Vuelve mañana (${fmtF(e.proximo)}) y la repites.`}
     }else{
@@ -582,7 +605,7 @@ function htmlRepaso(){
   const cs=Object.keys(S.cartas),cdom=cs.filter(k=>S.cartas[k].dominada).length;
   const prox=ids.filter(i=>!S.errores[i].dominada&&S.errores[i].proximo>hoy()).map(i=>({f:S.errores[i].proximo,t:etq(BQ[i]),d:BQ[i].d}))
     .concat(cs.filter(k=>!S.cartas[k].dominada&&S.cartas[k].proximo>hoy()).map(k=>({f:S.cartas[k].proximo,t:'Ejercicios',d:etS(S.cartas[k].t,S.cartas[k].s)}))).sort((a,b)=>a.f.localeCompare(b.f));
-  let h=`<h1>Repaso de errores</h1><p class="muted">Cada error vuelve a +1, +3 y +7 días. Las preguntas oficiales vuelven tal cual; los ejercicios vuelven con otro del mismo subtema. Tres aciertos seguidos = dominado.</p>`;
+  let h=`<h1>Repaso de errores</h1><p class="muted">Cada error vuelve a +1, +3 y +7 días. Cada error vuelve con un ejercicio NUEVO del mismo tema (puedes cambiarlo en Progreso → Ajustes). Tres aciertos seguidos = dominado.</p>`;
   h+=`<section class="card"><span class="lbl">Hoy</span><h2>${po.length+pc.length} por repasar</h2>
     <div class="chips"><span class="chip">${po.length} preguntas oficiales</span><span class="chip">${pc.length} ejercicios de refuerzo</span></div>
     ${po.length+pc.length?`<button class="btn pri block" data-act="repaso-ini">Empezar repaso</button>`:'<p class="muted small">Nada pendiente. Vuelve mañana o refuerza tus puntos débiles.</p>'}
@@ -614,7 +637,9 @@ function htmlResumen(){
     <div class="row"><button class="btn sm" data-act="bk-copy">Copiar respaldo</button><button class="btn sm" data-act="bk-open">Restaurar…</button></div>
     ${bk?`<div class="stack">${bk.msg?`<p class="small">${esc(bk.msg)}</p>`:''}<textarea id="bktxt" spellcheck="false" ${bk.restore?'placeholder="Pega aquí tu respaldo"':'readonly'}>${bk.restore?'':esc(bk.txt)}</textarea>
       ${bk.restore?(bk.pend?'<div class="row"><button class="btn sm pri" data-act="bk-confirm">Sí, restaurar</button><button class="btn sm" data-act="bk-cancel">Cancelar</button></div>':'<div class="row"><button class="btn sm pri" data-act="bk-restore">Revisar respaldo</button><button class="btn sm" data-act="bk-cancel">Cancelar</button></div>'):'<button class="btn sm" data-act="bk-cancel">Cerrar</button>'}</div>`:''}</section>
-  <section class="card"><span class="lbl">Ajustes</span><div class="row"><span class="small">Preguntar qué tan seguro estás antes de ver el resultado</span><button class="btn sm" data-act="conf-toggle">${S.ajustes.conf?'Activado':'Apagado'}</button></div></section>
+  <section class="card"><span class="lbl">Ajustes</span>
+    <div class="stack"><span class="small">Cuando repasas un error oficial, quiero que vuelva como:</span>
+      <div class="sw">${[['gen','Ejercicio nuevo'],['gemela','Otra oficial parecida'],['misma','La misma pregunta']].map(x=>`<button class="${(S.ajustes.repaso||'gen')===x[0]?'cur':''}" data-act="rep-modo" data-m="${x[0]}">${x[1]}</button>`).join('')}</div></div><div class="row"><span class="small">Preguntar qué tan seguro estás antes de ver el resultado</span><button class="btn sm" data-act="conf-toggle">${S.ajustes.conf?'Activado':'Apagado'}</button></div></section>
     <section class="card flat"><p class="small muted">Prioridad = 50 × peso del tema en 7 pruebas oficiales × tasa de error suavizada de tus ensayos y práctica. Con pocos datos es una guía; cada ensayo la afina. ${cloud?'Tu progreso se guarda en tu cuenta.':'Tu progreso se guarda solo en este teléfono.'}</p></section>`;
   return h;
 }
@@ -861,6 +886,8 @@ document.addEventListener('click',ev=>{
     case 'resp-of':{const s=sesion;if(!s||s.resp!==null)break;if(S.ajustes.conf){s.sel=d.l;render(true)}else finalizar(d.l,null);break}
     case 'conf':{const s=sesion;if(!s||s.resp!==null||s.sel===null)break;finalizar(s.sel,+d.c);break}
     case 'causa':{const s=sesion,ent=d.i!==undefined?s.ents[+d.i]:s.ent;if(ent){ent[6]=ent[6]===+d.c?-1:+d.c;save();const y=window.scrollY;render(true);window.scrollTo(0,y)}break}
+    case 'orig':{const s=sesion,it=s&&s.items[s.i];if(it&&it.orig&&s.resp===null){s.items[s.i]={k:'of',id:it.orig};s.sel=null;render(true)}break}
+    case 'rep-modo':S.ajustes.repaso=d.m;save();render(true);break;
     case 'sig':{const s=sesion;s.i++;if(s.i>=s.n)s.fin=true;else{s.resp=null;s.sel=null;s.conf=null;s.ent=null;s.info='';s.subio=false;prepara(s.items[s.i])}render();break}
     case 'prueba-ini':iniciarSes(itemsPrueba(+d.n||10),'Mini-ensayo','prueba');break;
     case 'prueba-pick':{const s=sesion;if(!s||s.fin)break;s.resps[s.i]=+d.i;s.i++;if(s.i>=s.n)finPrueba();else render();break}

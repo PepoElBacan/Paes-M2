@@ -450,7 +450,7 @@ def log_aprox(rnd, nivel):
     la, lb = 0.30, 0.48          # log 2, log 3
     l5 = round(1 - la, 2)
     assert abs(math.log10(2) - la) < 0.01 and abs(math.log10(3) - lb) < 0.01 and abs(math.log10(5) - l5) < 0.01
-    m, base = rnd.choice([(15, 2), (20, 3), (30, 2), (45, 2), (50, 3), (40, 3)])
+    m, base = rnd.choice([(20, 3), (30, 2), (45, 2), (50, 3), (40, 3), (60, 3)])   # sin log₂15: es la pregunta I2026 P10
     fac = {2: la, 3: lb, 5: l5}
     ps, x = [], m
     for p in (2, 3, 5):
@@ -596,7 +596,7 @@ def suf_datos(rnd, nivel):
 # ───────────────────────── Geometría ─────────────────────────
 
 def geo_razon_diagonal(rnd, nivel):
-    a, b = rnd.choice([(16, 9), (4, 3), (5, 12), (8, 15), (16, 10)])
+    a, b = rnd.choice([(4, 3), (5, 12), (8, 15), (7, 24), (16, 10), (20, 21)])   # sin 16:9: es la pregunta I2026 P16
     k = rnd.choice(["k", "p", "t"])
     hip2 = a * a + b * b
     diag = raiz(1, hip2)

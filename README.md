@@ -32,7 +32,7 @@ python3 paes.py hoy                 # ¿qué hago hoy?  (el progreso ya viene se
 |---|---|
 | `python3 paes.py hoy` | plan del día: repasos pendientes + tema de mayor prioridad |
 | `python3 paes.py estado` | panel: puntaje de ensayos, repasos, y cuántas preguntas "se pierden" por tema |
-| `python3 paes.py repaso [--imagen]` | repaso del día: errores oficiales (PDF y página; corrige con la clave) + tarjetas de refuerzo de ejercicios |
+| `python3 paes.py repaso [--misma] [--imagen]` | repaso del día: cada error oficial vuelve como un **ejercicio nuevo del mismo tema** (con `--misma`, la pregunta original con su PDF y página) + tarjetas de refuerzo |
 | `python3 paes.py fortalezas` | subtemas que ya dominas |
 | `python3 paes.py meta 900` | cuántas correctas exige un puntaje, según las tablas oficiales |
 | `python3 paes.py refuerzo` | sesión con tus puntos más débiles: tarjetas vencidas + ejercicios de tus subtemas flojos |
