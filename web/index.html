@@ -411,7 +411,10 @@ function htmlPracticar(){
     <button class="tile" data-act="gen" data-t="${top3.join(',')}" data-n="9"><b>Sesión mixta</b><span>Tus 3 temas prioritarios</span></button>
     <button class="tile" data-act="prueba-ini" data-n="10"><b>Mini-ensayo</b><span>10 preguntas · 25 min · como la prueba</span></button></div>
     <p class="small muted">En el mini-ensayo no ves resultados hasta el final (2 min 30 s por pregunta). Lo fallado vuelve a tu refuerzo. </p><button class="btn sm" data-act="prueba-ini" data-n="20">Hacer un mini-ensayo de 20 preguntas</button>`;
-  h+=`<h2>Por tema</h2>`;
+  h+=`<h2>Preguntas oficiales por prueba</h2><div class="card"><p class="small muted">Las 7 pruebas descargadas de DEMRE. Cada una te abre 10 preguntas sin resolver (con el PDF en la página exacta) y cuenta tu avance.</p><div class="list">${D.orden.map(p=>{
+    const tot=D.banco.filter(q=>q.p===p&&!q.el&&q.k),hechas=tot.filter(q=>S.oficiales[q.i]),bien=hechas.filter(q=>S.oficiales[q.i].ok);
+    return `<button class="item" data-act="of-prueba" data-p="${p}"><span><b>${p}</b> <span class="small muted">${esc(D.pruebas[p].etq)}${D.pruebas[p].tipo!=='completa'?' · selección':''}</span><br><span class="small muted">${hechas.length} de ${tot.length} resueltas · ${bien.length} bien</span></span><span class="chip on">Practicar</span></button>`}).join('')}</div></div>
+  <h2>Por tema</h2>`;
   gens.forEach(x=>{const te=S.temas[x.t]||{nivel:1,intentos:0,aciertos:0,dominado:false};
     h+=`<section class="card tema" style="gap:8px"><div class="h"><span><span class="code">${x.t}</span><br><b>${esc(nomT(x.t))}</b></span>${te.dominado?'<span class="chip ok">dominado</span>':''}</div>
       ${bar(x.juego/max,'bad')}<p class="small muted">Se esperan perder ${x.juego.toFixed(1)} · ${te.intentos?`${te.aciertos}/${te.intentos} aciertos`:'sin práctica aún'}</p>
@@ -471,7 +474,7 @@ function itemsCartas(max){return cartasPend().slice(0,max||99).map(k=>({k:'gen',
 function gemelaOf(q,usados){
   let c=D.banco.filter(x=>x.t===q.t&&x.i!==q.i&&!x.el&&x.k&&!S.errores[x.i]&&!usados.has(x.i)&&(q.s==='general'||x.s===q.s));
   if(!c.length)c=D.banco.filter(x=>x.t===q.t&&x.i!==q.i&&!x.el&&x.k&&!S.errores[x.i]&&!usados.has(x.i));
-  c.sort((a,b)=>(S.oficiales[a.i]?1:0)-(S.oficiales[b.i]?1:0)||D.orden.indexOf(a.p)-D.orden.indexOf(b.p)||a.n-b.n);
+  c=mezclar(c).sort((a,b)=>(S.oficiales[a.i]?1:0)-(S.oficiales[b.i]?1:0));
   return c.length?c[0].i:null;
 }
 function variante(id,usados){
@@ -583,10 +586,21 @@ function finalizar(sel,conf){
   }
   save();render(true);
 }
-function ofLista(filtro){
-  const lista=D.banco.filter(q=>!q.el&&q.k&&filtro(q)).sort((a,b)=>D.orden.indexOf(a.p)-D.orden.indexOf(b.p)||a.n-b.n);
-  const nuevas=lista.filter(q=>!S.oficiales[q.i]),falladas=lista.filter(q=>S.oficiales[q.i]&&!S.oficiales[q.i].ok);
-  return nuevas.concat(falladas).slice(0,10).map(q=>({k:'of',id:q.i}));
+const mezclar=a=>{const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=x[i];x[i]=x[j];x[j]=t}return x};
+const rangoOf=q=>!S.oficiales[q.i]?0:(S.oficiales[q.i].ok?2:1);          // 0 sin ver · 1 fallada · 2 bien resuelta
+function ofLista(filtro,n,enOrden){
+  n=n||10;
+  const base=D.banco.filter(q=>!q.el&&q.k&&filtro(q)&&rangoOf(q)<2);
+  const grupos={};base.forEach(q=>(grupos[q.p]=grupos[q.p]||[]).push(q));
+  Object.keys(grupos).forEach(p=>{grupos[p]=(enOrden?grupos[p].sort((a,b)=>a.n-b.n):mezclar(grupos[p])).sort((a,b)=>rangoOf(a)-rangoOf(b))});
+  const pruebas=mezclar(D.orden.filter(p=>grupos[p])),out=[];
+  while(out.length<n&&pruebas.some(p=>grupos[p].length)){pruebas.forEach(p=>{if(out.length<n&&grupos[p].length)out.push(grupos[p].shift())})}
+  const items=out.map(q=>({k:'of',id:q.i}));return enOrden?items:intercalar(items);
+}
+function ofPrueba(p){
+  const it=ofLista(q=>q.p===p,10,true);
+  if(!it.length){alert_('Ya resolviste bien todas las preguntas de esta prueba.');return}
+  iniciarSes(it,'Oficiales · '+p);
 }
 function ofTema(t){const it=ofLista(q=>q.t===t);if(!it.length){alert_('Ya resolviste bien todas las preguntas oficiales de este tema.');return}iniciarSes(it,'Oficiales · '+t)}
 function reforzarSub(k){
@@ -887,6 +901,7 @@ document.addEventListener('click',ev=>{
     case 'conf':{const s=sesion;if(!s||s.resp!==null||s.sel===null)break;finalizar(s.sel,+d.c);break}
     case 'causa':{const s=sesion,ent=d.i!==undefined?s.ents[+d.i]:s.ent;if(ent){ent[6]=ent[6]===+d.c?-1:+d.c;save();const y=window.scrollY;render(true);window.scrollTo(0,y)}break}
     case 'orig':{const s=sesion,it=s&&s.items[s.i];if(it&&it.orig&&s.resp===null){s.items[s.i]={k:'of',id:it.orig};s.sel=null;render(true)}break}
+    case 'of-prueba':ofPrueba(d.p);break;
     case 'rep-modo':S.ajustes.repaso=d.m;save();render(true);break;
     case 'sig':{const s=sesion;s.i++;if(s.i>=s.n)s.fin=true;else{s.resp=null;s.sel=null;s.conf=null;s.ent=null;s.info='';s.subio=false;prepara(s.items[s.i])}render();break}
     case 'prueba-ini':iniciarSes(itemsPrueba(+d.n||10),'Mini-ensayo','prueba');break;
