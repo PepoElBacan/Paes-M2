@@ -66,6 +66,12 @@ Plan concreto hasta el día de la prueba: [`docs/plan_9_dias.md`](docs/plan_9_di
 DEMRE solo publicó una *selección* de preguntas de la regular de 2024 y 2025 (no la prueba completa). La regular de 2026 se rinde el **lunes 30-nov, 15:00 h** (calendario DEMRE) y aún no existe.
 Fuentes: <https://demre.cl/publicaciones> (cada prueba y su clavijero). Los PDF **no se versionan** (son material con derechos reservados de la Universidad de Chile / DEMRE): se descargan con `scripts/descargar_pruebas.sh`.
 
+## Cómo se guarda tu progreso (web)
+- **Teléfono:** copia inmediata en el navegador (con una copia previa).
+- **Tu cuenta:** cada guardado *lee lo que hay en la nube, lo combina con lo del teléfono y recién escribe*. Combinar significa que cada registro se queda con la versión de más actividad y que el historial y los ensayos se unen; así un dispositivo vacío o desactualizado nunca borra tu avance. No se escribe nada hasta haber leído la nube con éxito.
+- **Respaldos:** uno diario y uno del "mejor estado" en tu cuenta (Progreso → Respaldo → *Respaldos en mi cuenta* → Recuperar).
+- **Pruebas:** `node tests/web_persistencia.js <estado.json>` simula una cuenta y reproduce los escenarios de pérdida de datos.
+
 ## Estructura
 
 ```

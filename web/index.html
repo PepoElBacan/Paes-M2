@@ -48,8 +48,8 @@ p{margin:0}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:16px 4px}
 .brand{font:600 1rem var(--sans);letter-spacing:.01em;display:flex;align-items:center;gap:8px}
 .brand i{width:22px;height:22px;border-radius:7px;background:var(--hero-bg);display:grid;place-items:center;color:#fff;font:500 .6875rem var(--mono);font-style:normal}
-.sync{font:500 .6875rem var(--mono);color:var(--ink2);display:flex;align-items:center;gap:6px}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--ink2)} .sync.nube .dot{background:var(--ok)}
+.sync{font:500 .6875rem var(--mono);color:var(--ink2);display:flex;align-items:center;gap:6px;background:none;border:0;padding:6px 0;min-height:32px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ink2)} .sync.nube .dot{background:var(--ok)} .sync.warn .dot{background:var(--warn)} .sync.mal .dot{background:var(--bad)}
 
 main{display:flex;flex-direction:column;gap:14px;padding-block:10px 18px}
 main.conbar{padding-bottom:84px}
@@ -207,7 +207,7 @@ details.meta summary{list-style:none;cursor:pointer} details.meta summary::-webk
 </style>
 
 <div class="wrap">
-  <div class="top"><div class="brand"><i>M2</i>Entrenador PAES</div><div class="sync" id="sync"><span class="dot"></span><span id="synctxt">cargando…</span></div></div>
+  <div class="top"><div class="brand"><i>M2</i>Entrenador PAES</div><button class="sync" id="sync" data-act="sync-ahora" aria-label="Estado de guardado"><span class="dot"></span><span id="synctxt">cargando…</span></button></div>
   <main id="main"><div class="card"><p class="muted">Cargando tus datos…</p></div></main>
 </div>
 <div id="tip" hidden></div>
@@ -242,41 +242,123 @@ if(!VISTAS.includes(vista))vista='hoy';
 
 /* ───────── estado y persistencia ───────── */
 function estadoInicial(){const s=JSON.parse(JSON.stringify(D.semilla));s.ts=0;return normaliza(s)}
-function normaliza(s){s.temas=s.temas||{};s.errores=s.errores||{};s.ensayos=s.ensayos||[];s.oficiales=s.oficiales||{};s.sub=s.sub||{};s.cartas=s.cartas||{};s.hist=s.hist||[];s.guias=s.guias||{};s.formulas=s.formulas||{};s.dias=s.dias||{};s.ajustes=Object.assign({conf:true,meta:800,repaso:'gen'},s.ajustes||{});s.ts=s.ts||0;return s}
-function leerLocal(){try{const t=localStorage.getItem(KEY);return t?normaliza(JSON.parse(t)):null}catch(e){return null}}
-function escribirLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-let tmr=null,guardando=false,sucio=false;
-function save(){S.ts=Date.now();escribirLocal();if(dbDoc){sucio=true;clearTimeout(tmr);tmr=setTimeout(vaciar,1200)}badge()}
-async function vaciar(){
-  if(!dbDoc)return;
-  if(guardando){tmr=setTimeout(vaciar,700);return}
-  guardando=true;sucio=false;
-  if(JSON.stringify(S).length>230000)S.hist=S.hist.slice(-400);
-  try{await dbDoc.set({estado:S,ts:S.ts});setSync(true)}catch(e){setSync(false)}
-  guardando=false;if(sucio)vaciar();
+function normaliza(s){s.temas=s.temas||{};s.errores=s.errores||{};s.ensayos=s.ensayos||[];s.oficiales=s.oficiales||{};s.sub=s.sub||{};s.cartas=s.cartas||{};s.hist=s.hist||[];s.guias=s.guias||{};s.formulas=s.formulas||{};s.dias=s.dias||{};s.hojas=s.hojas||{};s.ajustes=Object.assign({conf:true,meta:800,repaso:'gen'},s.ajustes||{});s.ts=s.ts||0;return s}
+const clon=o=>JSON.parse(JSON.stringify(o));
+const canon=o=>JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((r,x)=>{r[x]=v[x];return r},{}):v);
+
+/* Combinación de estados (nunca se pierde avance): cada registro se queda con la versión que tiene MÁS actividad; el historial y los ensayos se unen */
+const ACT={errores:e=>e.intentos||0,temas:e=>e.intentos||0,sub:e=>e.i||0,cartas:e=>e.intentos||0,formulas:e=>(e.o||0)+(e.k||0)};
+function mejorRec(x,y,f){if(!x)return y;if(!y)return x;const ax=f(x),ay=f(y);if(ax!==ay)return ax>ay?x:y;return (x.u||0)>=(y.u||0)?x:y}
+function unionRec(a,b,f){const o={};a=a||{};b=b||{};Object.keys(a).concat(Object.keys(b)).forEach(k=>{if(!(k in o))o[k]=mejorRec(a[k],b[k],f)});return o}
+function mergeEstados(a,b){
+  a=normaliza(a);b=normaliza(b);
+  const r={version:a.version||b.version||1,ts:Math.max(a.ts||0,b.ts||0)};
+  r.errores=unionRec(a.errores,b.errores,ACT.errores);r.temas=unionRec(a.temas,b.temas,ACT.temas);r.sub=unionRec(a.sub,b.sub,ACT.sub);
+  r.cartas=unionRec(a.cartas,b.cartas,ACT.cartas);r.formulas=unionRec(a.formulas,b.formulas,ACT.formulas);
+  r.oficiales={};Object.keys(Object.assign({},a.oficiales,b.oficiales)).forEach(k=>{const x=a.oficiales[k],y=b.oficiales[k];r.oficiales[k]=!x?y:(!y?x:((x.f||'')>=(y.f||'')?x:y))});
+  r.guias={};Object.keys(Object.assign({},a.guias,b.guias)).forEach(k=>{const x=a.guias[k],y=b.guias[k];
+    if(!x||!y){r.guias[k]=x||y;return}r.guias[k]={h:!!(x.h||y.h),max:Math.max(x.max||0,y.max||0),p:(x.v||0)>=(y.v||0)?x.p:y.p,v:Math.max(x.v||0,y.v||0)}});
+  r.dias={};Object.keys(Object.assign({},a.dias,b.dias)).forEach(k=>{const x=a.dias[k],y=b.dias[k];r.dias[k]=!x?y:(!y?x:(x[0]>=y[0]?x:y))});
+  const seen={};r.ensayos=[];a.ensayos.concat(b.ensayos).forEach(e=>{const k=[e.prueba,e.fecha,e.correctas,e.puntuables].join('|');if(!seen[k]){seen[k]=1;r.ensayos.push(e)}});
+  r.ensayos.sort((x,y)=>(x.fecha||'').localeCompare(y.fecha||''));
+  const kh=e=>e[7]?('u'+e[7]):e.slice(0,7).join('|'),ca={},vb={},h=a.hist.slice();
+  a.hist.forEach(e=>{const k=kh(e);ca[k]=(ca[k]||0)+1});
+  b.hist.forEach(e=>{const k=kh(e);vb[k]=(vb[k]||0)+1;if(vb[k]>(ca[k]||0))h.push(e)});
+  h.sort((x,y)=>(x[0]||'').localeCompare(y[0]||''));r.hist=h.slice(-1200);
+  r.hojas=Object.assign({},b.hojas,a.hojas);
+  r.ajustes=((a.ajustes.u||0)>=(b.ajustes.u||0))?a.ajustes:b.ajustes;
+  return normaliza(r);
 }
-function setSync(n){cloud=n;const s=$('#sync');s.classList.toggle('nube',n);$('#synctxt').textContent=n?'guardado en tu cuenta':'solo en este teléfono'}
-async function conectarNube(){
+const riqueza=s=>s.hist.length+Object.keys(s.oficiales).length+s.ensayos.length*20+Object.keys(s.guias).length+Object.keys(s.formulas).length+Object.keys(s.errores).reduce((t,k)=>t+(s.errores[k].intentos||0),0);
+
+/* Almacenamiento local con copia previa */
+let almacenOk=true;
+function leerLocal(){
+  for(const k of [KEY,KEY+'-prev']){try{const t=localStorage.getItem(k);if(t)return normaliza(JSON.parse(t))}catch(e){}}
+  return null;
+}
+function escribirLocal(){
+  try{const n=JSON.stringify(S),prev=localStorage.getItem(KEY);if(prev&&prev!==n)localStorage.setItem(KEY+'-prev',prev);localStorage.setItem(KEY,n);almacenOk=true}catch(e){almacenOk=false}
+}
+
+/* Guardado en tu cuenta: leer → combinar → escribir. Nunca se escribe antes de haber leído la nube con éxito. */
+let tmr=null,enCurso=false,pend=false,nubeLista=false,ultSync=0,estadoSync='conectando',riquezaNube=0,ultRespaldoDia='',ultMejor=0,mejorRiq=0,unsub=null;
+const esperar=ms=>new Promise(r=>setTimeout(r,ms));
+const conTiempo=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('tiempo')),ms))]);
+const hhmm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
+function pintaSync(m){
+  if(m)estadoSync=m;const el=$('#sync'),tx=$('#synctxt');cloud=!!dbDoc&&nubeLista&&estadoSync!=='error';if(!el)return;
+  const t={ok:['nube','guardado '+hhmm(ultSync)],guardando:['warn','guardando…'],conectando:['warn','conectando…'],error:['mal','sin conexión · pendiente'],proteccion:['mal','revisa tus respaldos'],local:['mal','solo en este teléfono']}[estadoSync]||['mal','solo en este teléfono'];
+  el.className='sync '+t[0];tx.textContent=almacenOk?t[1]:'sin almacenamiento local · '+t[1];
+}
+function save(){S.ts=Date.now();escribirLocal();programar();badge()}
+function programar(){clearTimeout(tmr);if(!dbDoc||!nubeLista){pintaSync();return}pintaSync('guardando');tmr=setTimeout(sincroniza,500)}
+function refrescarSuave(){if(!sesion&&!ens&&!lec&&!fc)render(true);else badge()}
+function aplicar(m){if(canon(m)!==canon(S)){S=m;escribirLocal();refrescarSuave();return true}return false}
+async function sincroniza(){
+  if(!dbDoc||!nubeLista)return;
+  if(enCurso){pend=true;return}
+  enCurso=true;pend=false;pintaSync('guardando');
   try{
-    if(!window.claude||!window.claude.use)return;
-    const [user,db]=await Promise.all([window.claude.use('user'),window.claude.use('db')]);
-    if(!user||!db)return;
-    const uid=await user.id();if(!uid)return;
-    dbDoc=db.doc('data/users/'+uid+'/progreso');
-    const snap=await Promise.race([dbDoc.get(),new Promise((_,r)=>setTimeout(()=>r(new Error('t')),8000))]);
-    if(snap.exists){
-      const c=snap.data();
-      if(c&&c.estado&&(c.ts||0)>S.ts&&!sesion&&!ens){S=normaliza(c.estado);escribirLocal();render()}
-      else if(c&&c.estado&&(c.ts||0)<=S.ts&&S.ts>0){sucio=true;vaciar()}
-    }else if(S.ts>0){sucio=true;vaciar()}
-    setSync(true);
-  }catch(e){setSync(false)}
+    const snap=await conTiempo(dbDoc.get(),12000);
+    let remoto=null;
+    if(snap.exists){const c=snap.data();if(c&&c.estado)remoto=normaliza(c.estado)}
+    else if(snap.metadata&&snap.metadata.fromCache)throw new Error('sin confirmar');
+    if(remoto){riquezaNube=riqueza(remoto);aplicar(mergeEstados(S,remoto))}
+    if(riquezaNube>=8&&riqueza(S)<riquezaNube*.7){pintaSync('proteccion');enCurso=false;return}     // salvaguarda: nunca escribir algo mucho más pobre que lo que hay en la nube
+    if(JSON.stringify(S).length>230000)S.hist=S.hist.slice(-400);
+    await conTiempo(dbDoc.set({estado:S,ts:S.ts}),12000);
+    ultSync=Date.now();riquezaNube=riqueza(S);
+    await respaldar();pintaSync('ok');
+  }catch(e){pintaSync('error');pend=true;setTimeout(()=>{if(pend)programar()},8000)}
+  enCurso=false;if(pend&&estadoSync!=='error')programar();
 }
+async function respaldar(){
+  try{
+    const col=dbDoc.collection('respaldos'),f=hoy(),r=riqueza(S);
+    if(ultRespaldoDia!==f){await col.doc(f).set({estado:S,ts:S.ts,r});ultRespaldoDia=f}
+    if(r>mejorRiq&&Date.now()-ultMejor>120000){await col.doc('mejor').set({estado:S,ts:S.ts,r,f});mejorRiq=r;ultMejor=Date.now()}
+  }catch(e){}
+}
+async function conectarNube(){
+  pintaSync('conectando');
+  for(let i=0;i<6&&!nubeLista;i++){
+    try{
+      if(!window.claude||!window.claude.use){pintaSync('local');return}
+      const [user,db]=await Promise.all([window.claude.use('user'),window.claude.use('db')]);
+      if(!user||!db){pintaSync('local');return}
+      const uid=await user.id();if(!uid){pintaSync('local');return}
+      const ref=db.doc('data/users/'+uid+'/progreso');
+      const snap=await conTiempo(ref.get(),10000);
+      if(!snap.exists&&snap.metadata&&snap.metadata.fromCache)throw new Error('sin confirmar');
+      dbDoc=ref;
+      if(snap.exists){const c=snap.data();if(c&&c.estado){const remoto=normaliza(c.estado);riquezaNube=riqueza(remoto);aplicar(mergeEstados(S,remoto))}}
+      nubeLista=true;
+      try{const mj=await conTiempo(ref.collection('respaldos').doc('mejor').get(),6000);if(mj.exists)mejorRiq=(mj.data()||{}).r||0}catch(e){}
+      suscribir();programar();return;
+    }catch(e){dbDoc=null;pintaSync('conectando');await esperar(2500*(i+1))}
+  }
+  if(!nubeLista)pintaSync('local');
+}
+function suscribir(){
+  if(unsub||!dbDoc)return;
+  try{unsub=dbDoc.onSnapshot(snap=>{
+    if(!snap.exists||(snap.metadata&&snap.metadata.hasPendingWrites))return;
+    const c=snap.data();if(!c||!c.estado)return;
+    const remoto=normaliza(c.estado),m=mergeEstados(S,remoto);
+    riquezaNube=riqueza(remoto);
+    const cambio=aplicar(m);
+    if(canon(m)!==canon(remoto))programar();else if(cambio)escribirLocal();
+  },()=>{unsub=null})}catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dbDoc&&nubeLista){clearTimeout(tmr);sincroniza()}});
+window.addEventListener('pagehide',()=>{if(dbDoc&&nubeLista){clearTimeout(tmr);sincroniza()}});
+window.addEventListener('online',()=>{if(dbDoc&&nubeLista)programar();else if(!nubeLista)conectarNube()});
 
 /* ───────── lógica (misma que el sistema de escritorio) ───────── */
 const tEst=t=>S.temas[t]||(S.temas[t]={nivel:1,ventana:[],intentos:0,aciertos:0,dominado:false});
 function registrarPractica(t,ok){
-  const e=tEst(t);e.intentos++;e.aciertos+=ok?1:0;e.ventana=(e.ventana.concat([ok?1:0])).slice(-5);
+  const e=tEst(t);e.intentos++;e.u=Date.now();e.aciertos+=ok?1:0;e.ventana=(e.ventana.concat([ok?1:0])).slice(-5);
   let subio=false;const suma=e.ventana.reduce((a,b)=>a+b,0);
   if(e.ventana.length>=5&&suma>=4){if(e.nivel<3){e.nivel++;e.ventana=[];subio=true}else e.dominado=true}
   else if(e.ventana.length>=5&&suma<=1&&e.nivel>1){e.nivel--;e.ventana=[]}
@@ -284,11 +366,11 @@ function registrarPractica(t,ok){
 }
 function agregarError(id,nota){
   if(S.errores[id])return;
-  S.errores[id]={racha:0,intentos:0,ultimo:null,proximo:sumaDias(hoy(),1),dominada:false,nota:nota||''};
+  S.errores[id]={racha:0,intentos:0,ultimo:null,proximo:sumaDias(hoy(),1),dominada:false,nota:nota||'',u:Date.now()};
 }
 function registrarIntento(id,ok,sinOf){
   const f=hoy();const e=S.errores[id]||(S.errores[id]={racha:0,intentos:0,ultimo:null,proximo:f,dominada:false,nota:''});
-  e.intentos++;e.ultimo=f;
+  e.intentos++;e.ultimo=f;e.u=Date.now();
   if(ok){e.racha++;if(e.racha>=3){e.dominada=true;e.proximo=null}else e.proximo=sumaDias(f,[1,3,7][e.racha])}
   else{e.racha=0;e.dominada=false;e.proximo=sumaDias(f,1)}
   if(!sinOf)S.oficiales[id]={ok,f};save();return e;
@@ -301,14 +383,14 @@ function pendientes(){
 /* refuerzo: cada ejercicio generado que fallas abre una tarjeta de su subtema (vuelve a +1, +3, +7 días con otro ejercicio) */
 const nomS=x=>(D.subn&&D.subn[x])||x.replace(/-/g,' ');
 const etS=(t,sb)=>sb==='general'?(D.temas[t]?D.temas[t].n:t):nomS(sb);
-function regSub(t,sb,ok){const k=t+'|'+sb;const e=S.sub[k]||(S.sub[k]={i:0,a:0,v:[]});e.i++;e.a+=ok?1:0;e.v=e.v.concat([ok?1:0]).slice(-10)}
+function regSub(t,sb,ok){const k=t+'|'+sb;const e=S.sub[k]||(S.sub[k]={i:0,a:0,v:[]});e.i++;e.u=Date.now();e.a+=ok?1:0;e.v=e.v.concat([ok?1:0]).slice(-10)}
 function abrirCarta(t,sb,nivel,confiado){
   const k=t+'|'+sb,m=sumaDias(hoy(),1),c=S.cartas[k];
-  if(!c)S.cartas[k]={t,s:sb,nivel:nivel||1,racha:0,intentos:0,proximo:m,dominada:false,confiado:!!confiado};
-  else{c.racha=0;c.dominada=false;c.proximo=m;c.nivel=Math.max(1,Math.min(c.nivel,nivel||1));if(confiado)c.confiado=true}
+  if(!c)S.cartas[k]={t,s:sb,nivel:nivel||1,racha:0,intentos:0,proximo:m,dominada:false,confiado:!!confiado,u:Date.now()};
+  else{c.u=Date.now();c.racha=0;c.dominada=false;c.proximo=m;c.nivel=Math.max(1,Math.min(c.nivel,nivel||1));if(confiado)c.confiado=true}
 }
 function resolverCarta(k,ok){
-  const c=S.cartas[k],f=hoy();c.intentos++;
+  const c=S.cartas[k],f=hoy();c.intentos++;c.u=Date.now();
   if(ok){c.racha++;if(c.racha>=3){c.dominada=true;c.proximo=null}else c.proximo=sumaDias(f,[1,3,7][c.racha])}
   else{c.racha=0;c.dominada=false;c.proximo=sumaDias(f,1)}
 }
@@ -334,7 +416,7 @@ function debiles(){
 const CAUSAS=['No sabía el método','Cálculo o signo','Leí mal','Me confundí de fórmula','Falta de tiempo'];
 const CONFS=['Seguro','Dudé','Adiviné'];
 function logResp(kind,t,sb,ok,conf,causa){
-  const f=hoy(),e=[f,t,sb,kind,ok?1:0,conf==null?-1:conf,causa==null?-1:causa];
+  const f=hoy(),e=[f,t,sb,kind,ok?1:0,conf==null?-1:conf,causa==null?-1:causa,Date.now()+''+Math.floor(Math.random()*1000)];
   S.hist.push(e);if(S.hist.length>1200)S.hist=S.hist.slice(-1200);
   const d=S.dias[f]||(S.dias[f]=[0,0]);d[0]++;d[1]+=ok?1:0;return e;
 }
@@ -647,8 +729,13 @@ function htmlResumen(){
   const cs=Object.keys(S.cartas),act=cs.filter(k=>!S.cartas[k].dominada).length;
   h+=`<section class="card"><span class="lbl">Subtemas más débiles</span><div class="stack" style="gap:12px">${dd.map(x=>`<div class="tema" style="gap:5px"><div class="h"><span class="small"><b>${esc(etS(x.t,x.s))}</b> <span class="muted">${x.t}</span></span><b class="mono">${x.juego.toFixed(1)}</b></div>${bar(x.juego/maxd,'bad')}<span class="small muted">${x.e} error${x.e===1?'':'es'} en ${x.n}</span></div>`).join('')||'<p class="muted small">Se llenará con tus ensayos y ejercicios.</p>'}</div>
     <div class="chips"><span class="chip warn">${act} tarjetas de refuerzo activas</span><span class="chip ok">${cs.length-act} dominadas</span></div></section>`;
-  h+=`<section class="card"><span class="lbl">Respaldo de tus datos</span><p class="small muted">Tu progreso se guarda solo. Si quieres, copia un respaldo y guárdalo; puedes restaurarlo si cambias de cuenta o de dispositivo.</p>
-    <div class="row"><button class="btn sm" data-act="bk-copy">Copiar respaldo</button><button class="btn sm" data-act="bk-open">Restaurar…</button></div>
+  h+=`<section class="card"><span class="lbl">Respaldo de tus datos</span>
+    <p class="small"><b>${{ok:'Guardado en tu cuenta',guardando:'Guardando…',conectando:'Conectando con tu cuenta…',error:'Sin conexión: guardado en el teléfono, se sube solo cuando vuelva',proteccion:'Protección activa: revisa tus respaldos',local:'Solo en este teléfono'}[estadoSync]||''}</b>${ultSync?` · última vez ${hhmm(ultSync)}`:''}${almacenOk?'':' · tu navegador no deja guardar en el teléfono'}</p>
+    <p class="small muted">Cada guardado combina lo del teléfono con lo de tu cuenta, así que un dispositivo vacío o desactualizado nunca borra tu avance. Además se hace un respaldo diario en tu cuenta.</p>
+    <div class="row"><button class="btn sm pri" data-act="sync-ahora">Guardar ahora</button><button class="btn sm" data-act="resp-ver">Respaldos en mi cuenta</button></div>
+    ${respMsg?`<p class="small">${esc(respMsg)}</p>`:''}
+    ${respList?`<div class="list">${respList.lista.length?respList.lista.map((x,i)=>`<div class="item"><span><b>${esc(x.id==='mejor'?'El mejor respaldo':fmtF(x.id))}</b><br><span class="small muted">${x.r} registros · ${x.ts?hhmm(x.ts):''}</span></span><button class="btn sm" data-act="resp-rest" data-i="${i}">Recuperar</button></div>`).join(''):'<p class="small muted">Todavía no hay respaldos.</p>'}</div>`:''}
+    <div class="row"><button class="btn sm" data-act="bk-copy">Copiar respaldo</button><button class="btn sm" data-act="bk-open">Restaurar desde texto…</button></div>
     ${bk?`<div class="stack">${bk.msg?`<p class="small">${esc(bk.msg)}</p>`:''}<textarea id="bktxt" spellcheck="false" ${bk.restore?'placeholder="Pega aquí tu respaldo"':'readonly'}>${bk.restore?'':esc(bk.txt)}</textarea>
       ${bk.restore?(bk.pend?'<div class="row"><button class="btn sm pri" data-act="bk-confirm">Sí, restaurar</button><button class="btn sm" data-act="bk-cancel">Cancelar</button></div>':'<div class="row"><button class="btn sm pri" data-act="bk-restore">Revisar respaldo</button><button class="btn sm" data-act="bk-cancel">Cancelar</button></div>'):'<button class="btn sm" data-act="bk-cancel">Cerrar</button>'}</div>`:''}</section>
   <section class="card"><span class="lbl">Ajustes</span>
@@ -902,15 +989,15 @@ document.addEventListener('click',ev=>{
     case 'causa':{const s=sesion,ent=d.i!==undefined?s.ents[+d.i]:s.ent;if(ent){ent[6]=ent[6]===+d.c?-1:+d.c;save();const y=window.scrollY;render(true);window.scrollTo(0,y)}break}
     case 'orig':{const s=sesion,it=s&&s.items[s.i];if(it&&it.orig&&s.resp===null){s.items[s.i]={k:'of',id:it.orig};s.sel=null;render(true)}break}
     case 'of-prueba':ofPrueba(d.p);break;
-    case 'rep-modo':S.ajustes.repaso=d.m;save();render(true);break;
+    case 'rep-modo':S.ajustes.repaso=d.m;S.ajustes.u=Date.now();save();render(true);break;
     case 'sig':{const s=sesion;s.i++;if(s.i>=s.n)s.fin=true;else{s.resp=null;s.sel=null;s.conf=null;s.ent=null;s.info='';s.subio=false;prepara(s.items[s.i])}render();break}
     case 'prueba-ini':iniciarSes(itemsPrueba(+d.n||10),'Mini-ensayo','prueba');break;
     case 'prueba-pick':{const s=sesion;if(!s||s.fin)break;s.resps[s.i]=+d.i;s.i++;if(s.i>=s.n)finPrueba();else render();break}
     case 'prueba-skip':{const s=sesion;if(!s||s.fin)break;s.i++;if(s.i>=s.n)finPrueba();else render();break}
     case 'prueba-fin':finPrueba();break;
     case 'ptab':progTab=d.p;render(true);break;
-    case 'meta':S.ajustes.meta=+d.m;save();render(true);break;
-    case 'conf-toggle':S.ajustes.conf=!S.ajustes.conf;save();render(true);break;
+    case 'meta':S.ajustes.meta=+d.m;S.ajustes.u=Date.now();save();render(true);break;
+    case 'conf-toggle':S.ajustes.conf=!S.ajustes.conf;S.ajustes.u=Date.now();save();render(true);break;
     case 'ens-ini':iniciarEns();break;
     case 'ens-pr':ens.prueba=d.p;ens.resp={};render();break;
     case 'ens-atras':ens.prueba=null;render();break;
@@ -945,7 +1032,10 @@ document.addEventListener('click',ev=>{
     case 'bk-open':bk={restore:true};render(true);break;
     case 'bk-restore':{try{const o=JSON.parse(($('#bktxt')||{}).value||'');if(!o||typeof o!=='object'||!Array.isArray(o.ensayos)||typeof o.errores!=='object')throw new Error('x');
         bk={restore:true,pend:o,msg:`Se reemplazará tu progreso por: ${Object.keys(o.errores).length} errores, ${(o.hist||[]).length} respuestas y ${o.ensayos.length} ensayo(s).`}}catch(e){bk={restore:true,msg:'Ese texto no parece un respaldo válido.'}}render(true);break}
-    case 'bk-confirm':{if(bk&&bk.pend){S=normaliza(bk.pend);S.ts=Date.now();save();bk=null;render()}break}
+    case 'bk-confirm':{if(bk&&bk.pend){S=mergeEstados(S,normaliza(bk.pend));save();bk=null;render()}break}
+    case 'sync-ahora':{if(dbDoc&&nubeLista){clearTimeout(tmr);sincroniza()}else conectarNube();break}
+    case 'resp-ver':verRespaldos();break
+    case 'resp-rest':{const it=respList&&respList.lista[+d.i];if(it){S=mergeEstados(S,normaliza(clon(it.estado)));save();respMsg='Recuperado: se combinó ese respaldo con tu progreso actual.';render(true)}break}
     case 'bk-cancel':bk=null;render(true);break
   }
 });
@@ -957,11 +1047,20 @@ async function cargar(){
     D=d;GUIAS=g;L=lc;e.forEach(x=>{(POOL[x.t+'|'+x.n]=POOL[x.t+'|'+x.n]||[]).push(x)});
     D.banco.forEach(q=>BQ[q.i]=q);
     e.forEach(x=>{const a=x.t+'|'+x.s;(POOLSUB[a]=POOLSUB[a]||[]).push(x);(POOLSUB[a+'|'+x.n]=POOLSUB[a+'|'+x.n]||[]).push(x)});
-    S=leerLocal()||estadoInicial();setSync(false);$('#synctxt').textContent='solo en este teléfono';
-    cargaOk=true;render();conectarNube();
+    const local=leerLocal();S=local||estadoInicial();pintaSync('conectando');
+    cargaOk=true;
+    const nube=conectarNube();
+    if(!local){$('#main').innerHTML='<div class="card"><p class="muted">Recuperando tu progreso…</p></div>';await Promise.race([nube,esperar(5000)])}
+    render();
   }catch(err){
     $('#main').innerHTML=`<div class="card"><h2 class="err">No se pudieron cargar los datos</h2><p class="muted">Revisa tu conexión e inténtalo de nuevo.</p><button class="btn pri" onclick="location.reload()">Reintentar</button></div>`;
   }
+}
+let respList=null,respMsg='';
+async function verRespaldos(){
+  if(!dbDoc){respMsg='Solo disponible con tu cuenta conectada.';render(true);return}
+  try{const q=await conTiempo(dbDoc.collection('respaldos').get(),10000);
+    respList={lista:q.docs.map(x=>{const d=x.data()||{};return {id:x.id,r:d.r||0,ts:d.ts||0,estado:d.estado}}).filter(x=>x.estado).sort((a,b)=>b.r-a.r||b.ts-a.ts)};respMsg=''}catch(e){respMsg='No pude leer los respaldos ahora.'}render(true);
 }
 let tx=0,ty=0;
 document.addEventListener('touchstart',e=>{const t=e.changedTouches[0];tx=t.clientX;ty=t.clientY},{passive:true});
@@ -970,6 +1069,7 @@ document.addEventListener('touchend',e=>{
   const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
   if(Math.abs(dx)>80&&Math.abs(dy)<45){if(dx<0&&lec.i<pasosDe(lec.g).length-1)lecIr(lec.i+1);else if(dx>0&&lec.i>0)lecIr(lec.i-1)}
 },{passive:true});
+window.__paes={merge:mergeEstados,riqueza:riqueza,estado:()=>S,sync:()=>estadoSync};   // gancho para pruebas
 cargar();
 })();
 </script>
