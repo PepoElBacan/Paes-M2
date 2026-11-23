@@ -220,6 +220,30 @@ body .katex .katex-html{white-space:normal}
 .fq .katex{font-size:1.18em} .opt .katex{font-size:1.08em}
 .kv-row b .katex{color:inherit} .problema .katex{font-size:1.14em} .sol .katex{font-size:1.06em}
 .mxp{font-family:var(--mono,monospace);font-size:.94em}
+
+/* Preguntarle a Claude */
+#ask{position:fixed;inset:0;z-index:100} #ask[hidden]{display:none}
+.ask-bg{position:absolute;inset:0;background:rgba(10,14,18,.45)}
+.ask-sheet{position:absolute;left:0;right:0;bottom:var(--kb,0px);height:min(calc(var(--vvh,100dvh)*.9),780px);max-width:640px;margin:0 auto;background:var(--bg);border-radius:22px 22px 0 0;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,.28);animation:askup .25s ease both}
+@keyframes askup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.ask-sheet{animation:none}}
+.ask-grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 2px;flex:none}
+.ask-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 16px 8px;flex:none}
+.ask-head b{font-size:1.0625rem}
+.ask-ctx{padding:0 16px 8px;flex:none;font-size:.8125rem;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ask-msgs{flex:1;overflow-y:auto;padding:4px 16px 12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.am-u{align-self:flex-end;max-width:86%;background:var(--accent);color:var(--accent-ink);padding:9px 13px;border-radius:16px 16px 4px 16px;overflow-wrap:anywhere}
+.am-a{align-self:flex-start;max-width:96%;background:var(--surface);border:1px solid var(--line);padding:10px 14px;border-radius:16px 16px 16px 4px;overflow-wrap:anywhere}
+.am-a p{margin:0 0 .55em} .am-a p:last-child{margin:0} .am-a ul,.am-a ol{margin:.3em 0;padding-left:1.25em}
+.am-e{align-self:stretch;color:var(--bad);font-size:.875rem}
+.ask-hint{color:var(--ink2);font-size:.9rem;line-height:1.45}
+.ask-sug{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px;flex:none}
+.ask-sug button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 13px;font-size:.875rem;min-height:38px}
+.ask-form{display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);flex:none;background:var(--surface)}
+.ask-form textarea{flex:1;min-height:46px;max-height:120px;resize:none;border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;font:inherit;font-size:16px;background:var(--bg);color:var(--ink)}
+.ask-form .btn{min-height:46px;padding:8px 16px}
+.ask-img{display:flex;align-items:center;gap:8px;padding:0 16px 8px;flex:none;font-size:.8125rem;color:var(--ink2)}
+.btn.ask-open{gap:6px}
 </style>
 
 <div class="wrap">
@@ -227,6 +251,7 @@ body .katex .katex-html{white-space:normal}
   <main id="main"><div class="card"><p class="muted">Cargando tus datos…</p></div></main>
 </div>
 <div id="tip" hidden></div>
+<div id="ask" hidden><div class="ask-bg" data-act="ask-x"></div><section class="ask-sheet" role="dialog" aria-modal="true" aria-label="Pregúntale a Claude"><div class="ask-grab" id="ask-grab"></div><div class="ask-head" id="ask-head"><b>Pregúntale a Claude</b><button class="btn sm" data-act="ask-x">Cerrar</button></div><div class="ask-ctx" id="ask-ctx"></div><div id="ask-msgs" aria-live="polite"></div><div class="ask-sug" id="ask-sug"></div><div class="ask-img" id="ask-imgchip" hidden></div><div class="ask-form"><button class="btn sm" id="ask-imgbtn" data-act="ask-foto" hidden aria-label="Adjuntar una foto">Foto</button><input type="file" id="ask-file" accept="image/*" hidden><textarea id="ask-txt" rows="1" placeholder="Escribe tu duda…" enterkeyhint="send"></textarea><button class="btn pri" id="ask-send" data-act="ask-send">Enviar</button></div></section></div>
 <nav class="tabs" id="tabs" aria-label="Secciones">
   <button data-act="tab" data-v="hoy"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Hoy</button>
   <button data-act="tab" data-v="practicar"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/></svg></span>Practicar</button>
@@ -721,7 +746,7 @@ function htmlSesion(){
   }
   const it=s.items[s.i],r=s.resp,resp=r!==null,prueba=s.modo==='prueba';
   const pips=s.items.map((_,k)=>`<i class="${prueba?(k<s.i?'ok':(k===s.i?'now':'')):(k<s.hist.length?s.hist[k]:(k===s.i?'now':''))}"></i>`).join('');
-  let h=`<div class="sesion-top"><button class="btn sm" data-act="${prueba?'prueba-fin':'salir'}">${prueba?'Terminar':'← Salir'}</button><div class="pips">${pips}</div>${prueba?`<span class="crono" id="crono">${fmtT(s.limite-(Date.now()-s.t0))}</span>`:`<span class="mono small muted">${s.i+1}/${s.n}</span>`}</div>`;
+  let h=`<div class="sesion-top"><button class="btn sm" data-act="${prueba?'prueba-fin':'salir'}">${prueba?'Terminar':'← Salir'}</button><div class="pips">${pips}</div>${prueba?`<span class="crono" id="crono">${fmtT(s.limite-(Date.now()-s.t0))}</span>`:`<span class="mono small muted">${s.i+1}/${s.n}</span>`}${prueba?'':btnAsk()}</div>`;
   const sig=`<div class="fixbar"><div class="wrap"><button class="btn pri" data-act="sig">${s.i+1>=s.n?'Ver resultado':'Siguiente'}</button></div></div>`;
   const pedirConf=!prueba&&s.sel!==null&&!resp;
   const confPanel=pedirConf?`<section class="card"><span class="lbl">¿Qué tan seguro estás de tu respuesta?</span><div class="lv">${CONFS.map((c,k)=>`<button data-act="conf" data-c="${k}">${c}</button>`).join('')}</div><p class="small muted">Así detecto los errores que cometes con seguridad: son los que más conviene corregir.</p></section>`:'';
@@ -1052,7 +1077,7 @@ function nuevoMini(p){
 }
 function htmlLec(){
   const g=lec.g,pasos=pasosDe(g),n=pasos.length,p=pasos[lec.i],mi=modInfo(g);
-  let h=`<div class="lec-top"><button class="btn sm ghost" data-act="lec-salir">← Aprende</button><span class="lbl">${NOMP[p.t]} · ${lec.i+1}/${n}</span></div>
+  let h=`<div class="lec-top"><button class="btn sm ghost" data-act="lec-salir">← Aprende</button><span class="lbl">${NOMP[p.t]} · ${lec.i+1}/${n}</span>@@ASK@@</div>
     <div class="segs">${pasos.map((_,k)=>`<i class="${k<lec.i?'done':(k===lec.i?'now':'')}" data-act="lec-ir" data-k="${k}"></i>`).join('')}</div>`;
   if(p.t==='idea'){
     h+=`<section class="card step"><span class="lbl">${esc(GUIAS[g].titulo)}</span><h2>${esc(p.titulo)}</h2><p>${T(p.texto)}</p>
@@ -1093,7 +1118,7 @@ function htmlLec(){
   }
   const ultimo=lec.i>=n-1;
   h+=`<div class="fixbar"><div class="wrap">${lec.i>0?'<button class="btn" data-act="lec-prev">← Atrás</button>':''}${ultimo?`<button class="btn pri" data-act="lec-salir">Terminar</button>`:'<button class="btn pri" data-act="lec-next">Siguiente →</button>'}</div></div>`;
-  return h;
+  return h.replace('@@ASK@@',btnAsk());
 }
 const fcSabida=id=>{const f=S.formulas[id];return !!f&&f.o>=2&&f.o>f.k};
 function iniciarFc(){
@@ -1169,6 +1194,13 @@ document.addEventListener('click',ev=>{
     case 'of-tema':ofTema(d.t);break;
     case 'otra':{const t=sesion.titulo;if(sesion.modo==='prueba')iniciarSes(itemsPrueba(sesion.n),'Mini-ensayo','prueba');else if(t.startsWith('Refuerzo de'))iniciarSes(itemsRefuerzo(9),t);else if(sesion.items.every(x=>x.k==='gen'))iniciarSes(sesion.items.map(x=>({k:'gen',t:x.t,s:x.s,lv:x.lv})),t);else render();break}
     case 'salir':cerrarSes();break;
+    case 'ask':abreAsk();break;
+    case 'ask-x':cierraAsk();break;
+    case 'ask-send':askEnviar(($('#ask-txt')||{}).value);break;
+    case 'ask-stop':if(askCtl)askCtl.abort();break;
+    case 'ask-sug':askEnviar(d.q);break;
+    case 'ask-foto':{const f=$('#ask-file');if(f)f.click();break}
+    case 'ask-foto-x':askImg=null;pintaImg();break;
     case 'resp':{const s=sesion;if(!s||s.resp!==null)break;const i=+d.i;if(S.ajustes.conf){s.sel=i;render(true)}else finalizar(i,null);break}
     case 'resp-of':{const s=sesion;if(!s||s.resp!==null)break;if(S.ajustes.conf){s.sel=d.l;render(true)}else finalizar(d.l,null);break}
     case 'conf':{const s=sesion;if(!s||s.resp!==null||s.sel===null)break;finalizar(s.sel,+d.c);break}
@@ -1229,7 +1261,7 @@ document.addEventListener('click',ev=>{
 
 /* ───────── arranque ───────── */
 async function cargar(){
-  cargaKatex();
+  cargaKatex();iniciaAsk();
   try{
     const [d,e,g,lc]=await Promise.all(['datos.json','ejercicios.json','guias.json','lecciones.json'].map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(f);return r.json()})));
     D=d;GUIAS=g;L=lc;e.forEach(x=>{(POOL[x.t+'|'+x.n]=POOL[x.t+'|'+x.n]||[]).push(x)});
@@ -1257,7 +1289,141 @@ document.addEventListener('touchend',e=>{
   const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
   if(Math.abs(dx)>80&&Math.abs(dy)<45){if(dx<0&&lec.i<pasosDe(lec.g).length-1)lecIr(lec.i+1);else if(dx>0&&lec.i>0)lecIr(lec.i-1)}
 },{passive:true});
-window.__paes={tex:T,texh:Th,plano:texPlano,merge:mergeEstados,riqueza:riqueza,estado:()=>S,sync:()=>estadoSync};   // gancho para pruebas
+
+/* ───────── Preguntarle a Claude (sobre la pregunta actual) ───────── */
+let SAMP=null,sampLim=null,askAbierto=false,askBusy=false,askCtl=null,askImg=null,askErr='';
+const askHist=new Map();
+async function iniciaAsk(){
+  try{
+    if(!(window.claude&&window.claude.use))return;
+    SAMP=await window.claude.use('sample');
+    if(SAMP){try{sampLim=await SAMP.limits()}catch(e){sampLim=null}if(D)render(true)}
+  }catch(e){SAMP=null}
+}
+const btnAsk=()=>SAMP&&ctxAsk()?'<button class="btn sm ask-open" data-act="ask" aria-label="Preguntarle a Claude sobre esta pregunta">Preguntar</button>':'';
+function ctxGen(e,r){
+  let t=`Ejercicio de práctica generado por la app (tema: ${nomT(e.t)}; subtema: ${etS(e.t,e.s)}).\nEnunciado: ${e.q}\nAlternativas:\n`+e.o.map((o,k)=>`${LET[k]}) ${o}`).join('\n');
+  if(r!==null&&r!==undefined)t+=`\nEl estudiante marcó la ${LET[r]}. La correcta es la ${LET[e.c]}. Solución de la app: ${e.e}`;
+  else t+='\nEl estudiante AÚN NO responde esta pregunta.';
+  return t;
+}
+function ctxAsk(){
+  const SUG0=['Dame una pista','No sé por dónde empezar','¿Qué tema es este?'],SUGX=['¿Por qué me equivoqué?','Explícamelo paso a paso','Dame otro ejemplo parecido'],SUGOK=['¿Hay otra forma de resolverlo?','¿Qué trampa tenía?'];
+  if(sesion&&!sesion.fin){
+    const s=sesion;if(s.modo==='prueba')return null;
+    const it=s.items[s.i];if(!it)return null;
+    if(it.k==='gen'&&it.ej){const e=it.ej,r=s.resp;
+      return {key:'g|'+e.q,titulo:`${etS(e.t,e.s)} · ejercicio`,texto:ctxGen(e,r),foto:false,sug:r===null?SUG0:(r===e.c?SUGOK:SUGX)}}
+    if(it.k==='of'&&BQ[it.id]){const q=BQ[it.id],r=s.resp;
+      let t=`Pregunta oficial del DEMRE (PAES M2): ${q.p}, pregunta ${q.n}${q.pl?' (pregunta piloto: no puntúa)':''}. Tema: ${nomT(q.t)}${q.s==='general'?'':'; subtema: '+nomS(q.s)}. Descripción: ${q.d}.\nEl enunciado y las alternativas NO están en la app (están en el PDF oficial). Si el estudiante no los escribe o adjunta una foto, pídeselos.`;
+      if(r!==null)t+=`\nEl estudiante marcó la ${r}; la clave oficial es la ${q.k}.`;else t+='\nEl estudiante AÚN NO responde esta pregunta.';
+      return {key:'o|'+q.i,titulo:`${q.p} · pregunta ${q.n}`,texto:t,foto:true,sug:r===null?SUG0:(r===q.k?SUGOK:SUGX)}}
+    return null;
+  }
+  if(lec){
+    const p=pasosDe(lec.g)[lec.i];if(!p)return null;
+    if(p.t==='mini'&&lec.mini&&lec.mini.ej){const e=lec.mini.ej,r=lec.mini.resp;
+      return {key:'g|'+e.q,titulo:`${GUIAS[lec.g].titulo.replace(/^M\d+ · /,'')} · ejercicio`,texto:ctxGen(e,r),foto:false,sug:r===null?SUG0:(r===e.c?SUGOK:SUGX)}}
+    let t=`Lección "${GUIAS[lec.g].titulo}", paso "${p.titulo||p.t}".\n`;
+    if(p.t==='idea')t+=p.texto+'\n'+p.tabla.map(r=>r[0]+': '+r[1]).join('\n');
+    else if(p.t==='ejemplo')t+=`Problema: ${p.enun}\nPasos ya mostrados al estudiante:\n`+p.pasos.slice(0,lec.rev).map((x,k)=>(k+1)+'. '+x).join('\n')+(lec.rev>=p.pasos.length?'\nResultado: '+p.res:'');
+    else if(p.t==='trampas'||p.t==='tus')t+=p.items.map(r=>r[0]+' → '+r[1]).join('\n');
+    else return null;
+    return {key:'ls|'+lec.g+'|'+lec.i,titulo:`${GUIAS[lec.g].titulo.replace(/^M\d+ · /,'')} · ${p.titulo||''}`,texto:t,foto:false,sug:['Explícamelo más simple','Dame otro ejemplo','¿Cuándo se usa esto?']};
+  }
+  return null;
+}
+function mdLite(s){
+  s=String(s).replace(/\$\$/g,'$').replace(/\\[()]/g,'$').replace(/\\[\[\]]/g,'$');
+  let out='',lista=null;const cierra=()=>{if(lista){out+='</'+lista+'>';lista=null}};
+  const inl=t=>T(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  for(const raw of s.split('\n')){const l=raw.trim();let m;
+    if(!l){cierra();continue}
+    if((m=l.match(/^[-*•]\s+(.*)$/))){if(lista!=='ul'){cierra();out+='<ul>';lista='ul'}out+='<li>'+inl(m[1])+'</li>';continue}
+    if((m=l.match(/^\d+[.)]\s+(.*)$/))){if(lista!=='ol'){cierra();out+='<ol>';lista='ol'}out+='<li>'+inl(m[1])+'</li>';continue}
+    cierra();out+='<p>'+inl(l.replace(/^#+\s*/,''))+'</p>';
+  }
+  cierra();return out;
+}
+function pintaAsk(parcial){
+  const c=ctxAsk(),h=c?(askHist.get(c.key)||[]):[],box=$('#ask-msgs');if(!box)return;
+  let x='';
+  if(!h.length&&parcial===undefined)x='<p class="ask-hint">Pregúntame lo que no entiendas de esta pregunta. Si aún no la respondes, te doy pistas sin darte la respuesta.'+(c&&c.foto?' Esta es una pregunta oficial y su enunciado está en el PDF: <b>toma una foto o captura</b> y adjúntala con el botón Foto, o escribe lo que dice.':'')+'</p>';
+  x+=h.map(m=>m.role==='user'?`<div class="am-u">${esc(m.content)}</div>`:`<div class="am-a">${mdLite(m.content)}</div>`).join('');
+  if(parcial!==undefined&&parcial!==null)x+=`<div class="am-a">${parcial?mdLite(parcial):'<span class="ask-hint">Pensando…</span>'}</div>`;
+  if(askErr)x+=`<div class="am-e">${esc(askErr)}</div>`;
+  box.innerHTML=x;box.scrollTop=box.scrollHeight;
+  const sug=$('#ask-sug');if(sug)sug.innerHTML=(!h.length&&parcial===undefined&&c)?c.sug.map(t=>`<button data-act="ask-sug" data-q="${esc(t)}">${esc(t)}</button>`).join(''):'';
+  const env=$('#ask-send');if(env){env.textContent=askBusy?'Detener':'Enviar';env.dataset.act=askBusy?'ask-stop':'ask-send'}
+}
+function pintaImg(){
+  const ch=$('#ask-imgchip');if(!ch)return;
+  ch.hidden=!askImg;ch.innerHTML=askImg?`<span>Foto adjunta: ${esc(askImg.name||'imagen')}</span><button class="btn sm" data-act="ask-foto-x">Quitar</button>`:'';
+}
+function abreAsk(){
+  if(askAbierto)return;
+  if(!SAMP){alert_('Preguntar a Claude no está disponible en este momento.');return}
+  const c=ctxAsk();
+  if(!c){alert_(sesion&&sesion.modo==='prueba'?'Durante el mini-ensayo no se puede preguntar.':'Abre una pregunta para consultarla con Claude.');return}
+  askAbierto=true;askErr='';askImg=null;
+  $('#ask-ctx').textContent=c.titulo;
+  $('#ask-imgbtn').hidden=!(sampLim&&sampLim.images&&c.foto);
+  pintaImg();pintaAsk();
+  $('#ask').hidden=false;document.body.style.overflow='hidden';
+  ajustaAsk();
+}
+function cierraAsk(){
+  if(askCtl)askCtl.abort();
+  askAbierto=false;$('#ask').hidden=true;document.body.style.overflow='';
+}
+function ajustaAsk(){
+  const v=window.visualViewport,el=$('#ask');if(!el)return;
+  if(v){el.style.setProperty('--vvh',v.height+'px');el.style.setProperty('--kb',Math.max(0,window.innerHeight-v.height-v.offsetTop)+'px')}
+}
+const ASK_REGLAS='Eres un tutor de matemática para estudiantes chilenos que preparan la PAES de Competencia Matemática 2 (M2). Responde en español de Chile, claro y breve (unas 120 palabras como máximo, salvo que te pidan más), pensando en la pantalla de un celular. Escribe la matemática en LaTeX entre signos de pesos ($x^2$, $\\dfrac{a}{b}$); un signo de pesos literal se escribe \\$. No uses $$, ni títulos, ni tablas; puedes usar listas cortas y **negrita**. Si el estudiante aún no responde la pregunta, NO reveles la alternativa correcta ni la solución completa: da una pista o la idea clave, salvo que te pida explícitamente la respuesta. Si ya respondió, explica el error o el camino correcto paso a paso y menciona la trampa típica. Si falta el enunciado de una pregunta oficial, no lo inventes: pídelo. Si lo que pregunta no tiene relación con la matemática o la PAES, reencáuzalo con amabilidad.';
+const ASK_ERR={not_granted:'No diste permiso para usar Claude en esta página. Ábrela de nuevo para permitirlo.',sampling_disabled:'Claude no está disponible para tu cuenta.',rate_limited:'Llegaste al límite de uso o hiciste muchas preguntas seguidas. Intenta de nuevo más tarde.',upstream_error:'Se interrumpió la conexión. Toca Enviar para intentarlo de nuevo.',empty_completion:'No obtuve respuesta. Reformula tu pregunta.',refused:'No puedo ayudar con esa consulta. Prueba con otra pregunta.',session_expired:'Tu sesión expiró: vuelve a abrir la página.',image_rejected:'No pude usar esa imagen. Prueba con otra foto.',prompt_too_large:'La conversación es muy larga; cierra y abre de nuevo.'};
+async function askEnviar(txt){
+  const c=ctxAsk();if(!c||!SAMP||askBusy)return;
+  txt=(txt||'').trim();if(!txt&&!askImg)return;
+  const h=askHist.get(c.key)||[];askHist.set(c.key,h);
+  const img=askImg;askImg=null;pintaImg();
+  h.push({role:'user',content:(txt||'Este es el enunciado de la pregunta (adjunto una foto).')+(img?' [foto adjunta]':'')});
+  askErr='';askBusy=true;askCtl=new AbortController();
+  const ta=$('#ask-txt');if(ta)ta.value='';
+  pintaAsk('');
+  const input=[{role:'user',content:ASK_REGLAS+'\n\nCONTEXTO DE LA PREGUNTA QUE TIENE EL ESTUDIANTE EN PANTALLA:\n'+c.texto}].concat(h.slice(-12));
+  const opts={cache:false,signal:askCtl.signal,onText:({text})=>{if(askAbierto)pintaAsk(text)}};
+  if(img)opts.images=img;
+  try{
+    const r=await SAMP(input,opts);
+    h.push({role:'assistant',content:r.text+(r.truncated?'\n\n(respuesta cortada: pídeme que continúe)':'')});
+  }catch(e){
+    const code=e&&e.code;
+    if(e&&e.text)h.push({role:'assistant',content:e.text+'\n\n(respuesta interrumpida)'});
+    if(code!=='cancelled')askErr=ASK_ERR[code]||'No pude responder ahora. Intenta de nuevo.';
+    if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'){SAMP=null}
+  }finally{
+    askBusy=false;askCtl=null;
+    if(askAbierto)pintaAsk();
+    if(!SAMP&&D){cierraAsk();render(true)}
+  }
+}
+(function(){
+  let ax=0,ay=0,zona=false;
+  document.addEventListener('touchstart',e=>{const t=e.changedTouches[0];ax=t.clientX;ay=t.clientY;zona=!askAbierto&&!!(e.target.closest&&e.target.closest('#tabs,.fixbar'))},{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!zona)return;zona=false;
+    const t=e.changedTouches[0],dy=t.clientY-ay,dx=t.clientX-ax;
+    if(dy<-45&&Math.abs(dy)>Math.abs(dx)*1.4&&SAMP&&ctxAsk())abreAsk();
+  },{passive:true});
+  let sy=0;
+  document.addEventListener('touchstart',e=>{if(askAbierto&&e.target.closest&&e.target.closest('#ask-grab,#ask-head'))sy=e.changedTouches[0].clientY;else sy=0},{passive:true});
+  document.addEventListener('touchend',e=>{if(askAbierto&&sy&&e.changedTouches[0].clientY-sy>70){sy=0;cierraAsk()}},{passive:true});
+  if(window.visualViewport){visualViewport.addEventListener('resize',ajustaAsk);visualViewport.addEventListener('scroll',ajustaAsk)}
+  const fi=document.getElementById('ask-file');
+  if(fi)fi.addEventListener('change',()=>{const f=fi.files&&fi.files[0];askImg=f||null;fi.value='';pintaImg()});
+})();
+window.__paes={ask:()=>ctxAsk(),tex:T,texh:Th,plano:texPlano,merge:mergeEstados,riqueza:riqueza,estado:()=>S,sync:()=>estadoSync};   // gancho para pruebas
 cargar();
 })();
 </script>
