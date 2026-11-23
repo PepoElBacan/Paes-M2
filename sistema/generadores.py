@@ -792,7 +792,7 @@ def pye_desviacion(rnd, nivel):
     enun = f"¿Cuál es la desviación estándar del grupo de datos {', '.join(map(str, datos))}? (considera los datos como población)"
     mal = [(str(int(var)), "Esa es la VARIANZA; la desviación estándar es su raíz cuadrada."),
            (dec(muestral), "Dividiste por n − 1 (desviación muestral); en M2 se usa n."),
-           (str(Fr(sum(abs(d) for d in dev), n).__float__()).replace(".", ",").rstrip("0").rstrip(","), "Esa es la desviación media, no la estándar."),
+           (dec(float(Fr(sum(abs(d) for d in dev), n))).rstrip("0").rstrip(","), "Esa es la desviación media, no la estándar."),
            (str(sd + 1), "Cálculo mal hecho: revisa las desviaciones al cuadrado.")]
     return dict(tema="PYE-dis", subtema="desviacion-varianza", enunciado=enun, correcta=str(sd), distractores=mal,
                 explicacion=f"Media = {media}. Desviaciones: {dev}. Cuadrados: {[d * d for d in dev]}, suma = {sum(d * d for d in dev)}. "

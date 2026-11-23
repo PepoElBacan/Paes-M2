@@ -24,6 +24,7 @@ from sistema import camino as C  # noqa: E402
 from sistema import generadores as G  # noqa: E402
 from sistema.taxonomia import TEMAS  # noqa: E402
 from lecciones import LECCIONES, TARJETAS  # noqa: E402
+from mate_tex import convertir  # noqa: E402
 
 WEB = RAIZ / "web"
 POR_NIVEL = 22     # ejercicios únicos por (generador, nivel)
@@ -63,17 +64,29 @@ PLAN_MOVIL = {
 
 # ───────────────────────── Markdown → HTML mínimo ─────────────────────────
 
+MATH = False      # si es True, $…$ en el markdown es LaTeX (se muestra con KaTeX en la app)
+
+
 def inline(s):
     partes = re.split(r"(`[^`]+`)", s)
     out = []
     for p in partes:
         if p.startswith("`") and p.endswith("`") and len(p) > 1:
-            out.append("<code>" + html.escape(p[1:-1], quote=False) + "</code>")
+            out.append("<code>" + html.escape(p[1:-1], quote=False).replace("$", "\\$") + "</code>")
             continue
-        p = html.escape(p, quote=False)
+        guardados = []
+
+        def guarda(m):
+            guardados.append("$" + html.escape(m.group(1), quote=False) + "$")
+            return f"\x00{len(guardados) - 1}\x00"
+        if MATH:
+            p = re.sub(r"(?<![\\$])\$([^$\n]+?)\$", guarda, p)
+        p = p.replace("\\$", "$")
+        p = html.escape(p, quote=False).replace("$", "\\$")      # todo $ suelto es moneda
         p = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', p)
         p = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", p)
         p = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<em>\1</em>", p)
+        p = re.sub(r"\x00(\d+)\x00", lambda m: guardados[int(m.group(1))], p)
         out.append(p)
     return "".join(out)
 
@@ -98,7 +111,7 @@ def md_a_html(md):
             j = i + 1
             while j < len(lineas) and not lineas[j].startswith("```"):
                 j += 1
-            out.append("<pre>" + html.escape("\n".join(lineas[i + 1:j])) + "</pre>")
+            out.append("<pre>" + html.escape("\n".join(lineas[i + 1:j])).replace("$", "\\$") + "</pre>")
             i = j + 1
         elif l.startswith("|"):
             j = i
@@ -175,9 +188,9 @@ def ejercicios():
                         continue
                     vistos.add(ej["enunciado"])
                     n_gen += 1
-                    reg.append({"t": tema, "s": ej["subtema"], "n": nivel, "q": ej["enunciado"],
-                                "o": [o[0] for o in ej["opciones"]], "r": [o[1] or "" for o in ej["opciones"]],
-                                "c": ej["correcta"], "e": ej["explicacion"]})
+                    reg.append({"t": tema, "s": ej["subtema"], "n": nivel, "q": convertir(ej["enunciado"]),
+                                "o": [convertir(o[0]) for o in ej["opciones"]], "r": [convertir(o[1] or "") for o in ej["opciones"]],
+                                "c": ej["correcta"], "e": convertir(ej["explicacion"])})
             pool += reg
             total += len(reg)
     return pool
@@ -216,7 +229,10 @@ def main():
                                    ("diagnostico", "diagnostico.md", "Diagnóstico de tu ensayo"),
                                    ("investigacion", "investigacion.md", "Cómo estudiar: evidencia y meta")):
         txt = limpiar_guia((RAIZ / "docs" / archivo).read_text())
+        global MATH
+        MATH = clave == "formulas"
         guias[clave] = {"titulo": titulo, "html": md_a_html(txt)}
+        MATH = False
     (WEB / "guias.json").write_text(json.dumps(guias, ensure_ascii=False, separators=(",", ":")))
     (WEB / "lecciones.json").write_text(json.dumps({"lecciones": LECCIONES,
         "tarjetas": [{"id": a, "m": b, "q": c, "a": d} for a, b, c, d in TARJETAS]}, ensure_ascii=False, separators=(",", ":")))

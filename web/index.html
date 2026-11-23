@@ -149,9 +149,11 @@ main.conbar{padding-bottom:84px}
 .segs i.done{background:var(--accent)} .segs i.now{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .step h2{font-size:1.375rem}
 .kv{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.kv-row{display:grid;grid-template-columns:minmax(92px,33%) 1fr;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:.9375rem}
+.kv-row{display:grid;grid-template-columns:minmax(112px,34%) 1fr;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:.9375rem}
 .kv-row:nth-child(even){background:var(--surface2)} .kv-row:last-child{border-bottom:0}
-.kv-row b{color:var(--accent);font-weight:600}
+.kv-row b{color:var(--accent);font-weight:600;overflow-wrap:normal;hyphens:manual}
+.kv-row span,.guia li,.guia p{line-height:1.75}
+.guia li{margin-bottom:6px}
 .problema{background:var(--accent-soft);border-radius:16px;padding:14px 16px;font-size:1.0625rem;overflow-wrap:anywhere}
 .paso{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:6px 0;align-items:start}
 .paso .n{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:500 .8125rem var(--mono)}
@@ -211,6 +213,13 @@ details.meta summary{list-style:none;cursor:pointer} details.meta summary::-webk
 .chart .mk.ens{fill:var(--surface);stroke:var(--accent);stroke-width:2}
 .accdots{display:inline-flex;gap:3px} .accdots i{width:8px;height:8px;border-radius:50%;background:var(--ok)} .accdots i.x{background:var(--bad)}
 .ln1{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:.875rem}
+
+/* LaTeX (KaTeX): ajustes de tamaño y salto de línea */
+body .katex{font-size:1.1em;white-space:normal;text-indent:0}
+body .katex .katex-html{white-space:normal}
+.fq .katex{font-size:1.18em} .opt .katex{font-size:1.08em}
+.kv-row b .katex{color:inherit} .problema .katex{font-size:1.14em} .sol .katex{font-size:1.06em}
+.mxp{font-family:var(--mono,monospace);font-size:.94em}
 </style>
 
 <div class="wrap">
@@ -232,6 +241,63 @@ details.meta summary{list-style:none;cursor:pointer} details.meta summary::-webk
 const KEY='paesm2-estado-v1';
 const $=(s,e=document)=>e.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ───────── LaTeX (KaTeX) ───────── */
+const kxCache=new Map();
+const kxListo=()=>!!(window.katex&&window.katex.renderToString);
+const MAPA={cdot:'·',times:'×',div:'÷',le:'≤',leq:'≤',ge:'≥',geq:'≥',ne:'≠',approx:'≈',pm:'±',Rightarrow:'⇒',Leftrightarrow:'⇔',iff:'⇔',to:'→',infty:'∞',theta:'θ',sigma:'σ',Delta:'Δ',pi:'π',varphi:'φ',circ:'°',lvert:'|',rvert:'|',mid:'|',cap:'∩',cup:'∪',ldots:'…',dots:'…',cos:'cos',tan:'tan',log:'log',ln:'ln',bar:'',overline:''};
+const SUPC={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','n':'ⁿ','-':'⁻','+':'⁺'};
+function texPlano(t){      // respaldo legible si KaTeX no cargó (sin internet): LaTeX → texto
+  let s=t.replace(/\\(?:left|right|displaystyle)/g,'').replace(/\{,\}/g,',').replace(/\^\{\\circ\}/g,'°')
+   .replace(/\\operatorname\{([^}]*)\}/g,'$1').replace(/\\text\{([^}]*)\}/g,'$1')
+   .replace(/\^\{([^{}]*)\}/g,(m,a)=>/^[0-9n+-]+$/.test(a)?[...a].map(c=>SUPC[c]||c).join(''):'^('+a+')')
+   .replace(/\^(\w)/g,(m,a)=>SUPC[a]||'^'+a).replace(/_\{([^{}]*)\}/g,'_$1');
+  for(let k=0;k<6;k++){
+    s=s.replace(/\\sqrt\[(\d+)\]\{([^{}]*)\}/g,'$1√($2)').replace(/\\sqrt\{([^{}]*)\}/g,'√($1)')
+     .replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,(m,a,b)=>'('+a+')/('+b+')')
+     .replace(/\\binom\{([^{}]*)\}\{([^{}]*)\}/g,'C($1,$2)');
+  }
+  s=s.replace(/\\tfrac\s*(\d)(\d)/g,'$1/$2').replace(/\\sqrt\s*(\w)/g,'√$1')
+   .replace(/\\(?:,|;|:|!|\s)/g,' ').replace(/\\%/g,'%').replace(/\\\$/g,'$')
+   .replace(/\\([A-Za-z]+)/g,(m,a)=>a in MAPA?MAPA[a]:a).replace(/[{}]/g,'').replace(/\s{2,}/g,' ');
+  return s.trim();
+}
+function mx(t){
+  if(kxCache.has(t))return kxCache.get(t);
+  if(kxListo()){
+    try{const h=window.katex.renderToString(t,{throwOnError:false,strict:'ignore',trust:false,output:'html'});kxCache.set(t,h);return h}catch(e){}
+  }
+  return '<span class="mxp">'+esc(texPlano(t))+'</span>';
+}
+const unesc=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+function T(s){          // texto plano con $…$ (LaTeX) → HTML seguro;  \$ = signo de pesos
+  s=String(s==null?'':s);
+  if(s.indexOf('$')<0)return esc(s);
+  const seg=[''];
+  for(let i=0;i<s.length;i++){const c=s[i];
+    if(c==='\\'&&s[i+1]==='$'){seg[seg.length-1]+='\\$';i++}
+    else if(c==='$')seg.push('');
+    else seg[seg.length-1]+=c}
+  if(seg.length%2===0)return esc(s.replace(/\\\$/g,'$'));
+  return seg.map((x,i)=>i%2?mx(x):esc(x.replace(/\\\$/g,'$'))).join('');
+}
+function Th(h){         // HTML de guías con $…$ ya escapado
+  if(h.indexOf('$')<0)return h;
+  return h.replace(/\\\$/g,'\u0001').replace(/\$([^$<>]+?)\$/g,(m,t)=>mx(unesc(t).replace(/\u0001/g,'\\$'))).replace(/\u0001/g,'$');
+}
+function cargaKatex(){
+  const fuentes=['https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js','https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js','https://unpkg.com/katex@0.16.9/dist/katex.min.js'];
+  let k=0;
+  const intenta=()=>{
+    if(kxListo()||k>=fuentes.length)return;
+    const sc=document.createElement('script');sc.src=fuentes[k++];sc.async=true;
+    sc.onload=()=>{if(kxListo()&&typeof render==='function'&&D){kxCache.clear();render(true)}};
+    sc.onerror=()=>{sc.remove();intenta()};
+    document.head.appendChild(sc);
+  };
+  intenta();
+  fetch('katex.css').then(r=>r.ok?r.text():Promise.reject()).then(css=>{const st=document.createElement('style');st.textContent=css;document.head.insertBefore(st,document.head.querySelector('style'))}).catch(()=>{});
+}
 const pad=n=>String(n).padStart(2,'0');
 const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const hoy=()=>iso(new Date());
@@ -619,13 +685,13 @@ function htmlSesion(){
   const confPanel=pedirConf?`<section class="card"><span class="lbl">¿Qué tan seguro estás de tu respuesta?</span><div class="lv">${CONFS.map((c,k)=>`<button data-act="conf" data-c="${k}">${c}</button>`).join('')}</div><p class="small muted">Así detecto los errores que cometes con seguridad: son los que más conviene corregir.</p></section>`:'';
   if(it.k==='gen'){
     const e=it.ej;
-    h+=`<section class="card"><span class="lbl">${prueba?`Pregunta ${s.i+1} de ${s.n}`:`${e.t} · ${esc(etS(e.t,e.s))} · nivel ${e.n}`}</span>${it.carta?'<div class="chips"><span class="chip on">refuerzo de un error anterior</span></div>':''}${it.orig?`<div class="chips"><span class="chip on">refuerza: ${esc(BQ[it.orig].d)}</span></div>`:''}<p class="enun">${esc(e.q)}</p>
+    h+=`<section class="card"><span class="lbl">${prueba?`Pregunta ${s.i+1} de ${s.n}`:`${e.t} · ${esc(etS(e.t,e.s))} · nivel ${e.n}`}</span>${it.carta?'<div class="chips"><span class="chip on">refuerzo de un error anterior</span></div>':''}${it.orig?`<div class="chips"><span class="chip on">refuerza: ${esc(BQ[it.orig].d)}</span></div>`:''}<p class="enun">${T(e.q)}</p>
       <div class="opts">${e.o.map((o,k)=>{let c='';if(resp){if(k===e.c)c='ok';else if(k===r)c='bad'}else if(s.sel===k)c='sel';
-        return `<button class="opt ${c}" data-act="${prueba?'prueba-pick':'resp'}" data-i="${k}" ${resp?'disabled':''}><span class="bub">${LET[k]}</span><span class="t">${esc(o)}</span></button>`}).join('')}</div>
+        return `<button class="opt ${c}" data-act="${prueba?'prueba-pick':'resp'}" data-i="${k}" ${resp?'disabled':''}><span class="bub">${LET[k]}</span><span class="t">${T(o)}</span></button>`}).join('')}</div>
       ${prueba?'<button class="btn sm" data-act="prueba-skip">Saltar</button>':''}${it.orig&&!resp&&s.sel===null?'<button class="btn sm ghost" data-act="orig">Prefiero la pregunta original</button>':''}</section>${confPanel}`;
     if(resp){const ok=r===e.c;
-      h+=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✓ Correcto':'✗ Era la '+LET[e.c]}</b>${!ok&&e.r[r]?`<span class="why">Tu opción: ${esc(e.r[r])}</span>`:''}${s.info?`<span class="why">${esc(s.info)}</span>`:''}${!ok&&s.conf===0?'<span class="why"><b>Error confiado:</b> te sorprendió; mira bien la solución.</span>':''}${s.subio?`<b>⬆ Subes a nivel ${tEst(e.t).nivel} en ${e.t}</b>`:''}</div>
-        ${ok?'':htmlCausas()}<div class="sol"><b>Solución.</b> ${esc(e.e)}</div>${sig}`}
+      h+=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✓ Correcto':'✗ Era la '+LET[e.c]}</b>${!ok&&e.r[r]?`<span class="why">Tu opción: ${T(e.r[r])}</span>`:''}${s.info?`<span class="why">${esc(s.info)}</span>`:''}${!ok&&s.conf===0?'<span class="why"><b>Error confiado:</b> te sorprendió; mira bien la solución.</span>':''}${s.subio?`<b>⬆ Subes a nivel ${tEst(e.t).nivel} en ${e.t}</b>`:''}</div>
+        ${ok?'':htmlCausas()}<div class="sol"><b>Solución.</b> ${T(e.e)}</div>${sig}`}
   }else{
     const q=BQ[it.id],e=S.errores[q.i];
     h+=`<section class="card"><span class="lbl">${esc(s.titulo)}</span><h2>${esc(q.p)} · pregunta ${q.n}</h2>
@@ -648,9 +714,9 @@ function htmlPruebaRes(){
   const filas=s.items.map((it,i)=>{
     const e=it.ej,r=s.resps[i],resp=r!==undefined,ok=resp&&r===e.c;
     return `<details class="tabla" style="border-bottom:1px solid var(--line);padding:8px 0"><summary style="color:var(--ink)"><span class="chip ${ok?'ok':'bad'}">${ok?'✓':(resp?'✗':'sin responder')}</span>&nbsp;<span class="small">${i+1}. ${esc(etS(e.t,e.s))}</span></summary>
-      <p class="enun small" style="margin:8px 0">${esc(e.q)}</p>
-      <p class="small muted">${resp?`Marcaste ${LET[r]}) ${esc(e.o[r])}${!ok&&e.r[r]?' · '+esc(e.r[r]):''}`:'No alcanzaste a responder.'} · Correcta: ${LET[e.c]}) ${esc(e.o[e.c])}</p>
-      <div class="sol small"><b>Solución.</b> ${esc(e.e)}</div>${ok?'':htmlCausas(i)}</details>`}).join('');
+      <p class="enun small" style="margin:8px 0">${T(e.q)}</p>
+      <p class="small muted">${resp?`Marcaste ${LET[r]}) ${T(e.o[r])}${!ok&&e.r[r]?' · '+T(e.r[r]):''}`:'No alcanzaste a responder.'} · Correcta: ${LET[e.c]}) ${T(e.o[e.c])}</p>
+      <div class="sol small"><b>Solución.</b> ${T(e.e)}</div>${ok?'':htmlCausas(i)}</details>`}).join('');
   return `<section class="card"><span class="lbl">Mini-ensayo · resultado</span><div class="count"><span class="n">${s.ok}/${s.n}</span></div>${bar(s.ok/s.n)}
     <p class="small muted">Usaste ${min.toFixed(1)} de ${(s.limite/60000).toFixed(1)} min · ${(min/s.n).toFixed(1)} min por pregunta (en la PAES son ~2,5). Las falladas y las no respondidas volverán mañana a tu refuerzo.</p></section>
     <section class="card"><span class="lbl">Revisión · toca una pregunta</span>${filas}</section>
@@ -947,30 +1013,30 @@ function htmlLec(){
   let h=`<div class="lec-top"><button class="btn sm ghost" data-act="lec-salir">← Aprende</button><span class="lbl">${NOMP[p.t]} · ${lec.i+1}/${n}</span></div>
     <div class="segs">${pasos.map((_,k)=>`<i class="${k<lec.i?'done':(k===lec.i?'now':'')}" data-act="lec-ir" data-k="${k}"></i>`).join('')}</div>`;
   if(p.t==='idea'){
-    h+=`<section class="card step"><span class="lbl">${esc(GUIAS[g].titulo)}</span><h2>${esc(p.titulo)}</h2><p>${esc(p.texto)}</p>
-      <div class="kv">${p.tabla.map(r=>`<div class="kv-row"><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join('')}</div></section>`;
+    h+=`<section class="card step"><span class="lbl">${esc(GUIAS[g].titulo)}</span><h2>${esc(p.titulo)}</h2><p>${T(p.texto)}</p>
+      <div class="kv">${p.tabla.map(r=>`<div class="kv-row"><b>${T(r[0])}</b><span>${T(r[1])}</span></div>`).join('')}</div></section>`;
   }else if(p.t==='ejemplo'){
     const tot=p.pasos.length,r=lec.rev;
-    h+=`<section class="card step"><span class="lbl">${esc(p.titulo)}</span><div class="problema">${esc(p.enun)}</div>
+    h+=`<section class="card step"><span class="lbl">${esc(p.titulo)}</span><div class="problema">${T(p.enun)}</div>
       ${r===0?'<p class="small muted">Intenta resolverlo en papel y luego revela los pasos uno a uno.</p>':''}
-      <div>${p.pasos.slice(0,r).map((t,k)=>`<div class="paso"><span class="n">${k+1}</span><p>${esc(t)}</p></div>`).join('')}</div>
-      ${r>=tot?`<div class="res">✓ ${esc(p.res)}</div>`:`<button class="btn pri block" data-act="lec-rev">${r===0?'Mostrar el primer paso':`Siguiente paso (${r}/${tot})`}</button>`}</section>`;
+      <div>${p.pasos.slice(0,r).map((t,k)=>`<div class="paso"><span class="n">${k+1}</span><p>${T(t)}</p></div>`).join('')}</div>
+      ${r>=tot?`<div class="res">✓ ${T(p.res)}</div>`:`<button class="btn pri block" data-act="lec-rev">${r===0?'Mostrar el primer paso':`Siguiente paso (${r}/${tot})`}</button>`}</section>`;
   }else if(p.t==='mini'){
     if(!lec.mini)nuevoMini(p);const mn=lec.mini,e=mn.ej,r=mn.resp,resp=r!==null;
-    h+=`<section class="card step"><span class="lbl">${esc(p.titulo)}</span><p class="enun">${esc(e.q)}</p>
+    h+=`<section class="card step"><span class="lbl">${esc(p.titulo)}</span><p class="enun">${T(e.q)}</p>
       <div class="opts">${e.o.map((o,k)=>{let c='';if(resp){if(k===e.c)c='ok';else if(k===r)c='bad'}
-        return `<button class="opt ${c}" data-act="lec-resp" data-i="${k}" ${resp?'disabled':''}><span class="bub">${LET[k]}</span><span class="t">${esc(o)}</span></button>`}).join('')}</div></section>`;
+        return `<button class="opt ${c}" data-act="lec-resp" data-i="${k}" ${resp?'disabled':''}><span class="bub">${LET[k]}</span><span class="t">${T(o)}</span></button>`}).join('')}</div></section>`;
     if(resp){const ok=r===e.c;
-      h+=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✓ Correcto':'✗ Era la '+LET[e.c]}</b>${!ok&&e.r[r]?`<span class="why">Tu opción: ${esc(e.r[r])}</span>`:''}${ok?'':'<span class="why">Mañana te pongo otro ejercicio de este subtema.</span>'}</div>
-        <div class="sol"><b>Solución.</b> ${esc(e.e)}</div><button class="btn block" data-act="lec-otro">Otro ejercicio</button>`}
+      h+=`<div class="fb ${ok?'ok':'bad'}"><b>${ok?'✓ Correcto':'✗ Era la '+LET[e.c]}</b>${!ok&&e.r[r]?`<span class="why">Tu opción: ${T(e.r[r])}</span>`:''}${ok?'':'<span class="why">Mañana te pongo otro ejercicio de este subtema.</span>'}</div>
+        <div class="sol"><b>Solución.</b> ${T(e.e)}</div><button class="btn block" data-act="lec-otro">Otro ejercicio</button>`}
   }else if(p.t==='trampas'){
     h+=`<section class="card step"><span class="lbl">${esc(GUIAS[g].titulo)}</span><h2>${esc(p.titulo)}</h2><p class="small muted">Toca cada tarjeta para ver cómo evitar la trampa.</p>
-      <div class="stack" style="gap:12px">${p.items.map((it,k)=>`<button class="flipc ${lec.flip.has(k)?'on':''}" data-act="lec-flip" data-k="${k}" aria-label="Trampa ${k+1}"><span class="in"><span class="face front"><span class="lbl">Trampa</span>${esc(it[0])}</span><span class="face back"><span class="lbl">Cómo evitarla</span>${esc(it[1])}</span></span></button>`).join('')}</div></section>`;
+      <div class="stack" style="gap:12px">${p.items.map((it,k)=>`<button class="flipc ${lec.flip.has(k)?'on':''}" data-act="lec-flip" data-k="${k}" aria-label="Trampa ${k+1}"><span class="in"><span class="face front"><span class="lbl">Trampa</span>${T(it[0])}</span><span class="face back"><span class="lbl">Cómo evitarla</span>${T(it[1])}</span></span></button>`).join('')}</div></section>`;
   }else if(p.t==='tus'){
     const ids=Object.keys(S.errores).filter(i=>BQ[i]&&mi.temas.includes(BQ[i].t));
     const temasConErr=mi.temas.filter(t=>ids.some(i=>BQ[i].t===t));
     h+=`<section class="card step"><span class="lbl">Basado en tu ensayo</span><h2>${esc(p.titulo)}</h2>
-      <div class="kv">${p.items.map(r=>`<div class="kv-row"><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join('')}</div></section>`;
+      <div class="kv">${p.items.map(r=>`<div class="kv-row"><b>${T(r[0])}</b><span>${T(r[1])}</span></div>`).join('')}</div></section>`;
     if(ids.length)h+=`<section class="card"><span class="lbl">Tus preguntas oficiales de este módulo</span><div class="list">${ids.map(i=>{const q=BQ[i],e=S.errores[i];
       return `<div class="item"><span><b>${esc(etq(q))}</b><br><span class="small muted">${esc(q.d)}</span></span><span class="chip ${e.dominada?'ok':(e.racha?'on':'warn')}">${e.dominada?'dominada':(e.racha?`racha ${e.racha}/3`:'por repasar')}</span></div>`}).join('')}</div>
       ${temasConErr.map(t=>`<button class="btn block" data-act="of-tema" data-t="${t}">Practicar oficiales · ${esc(nomT(t))}</button>`).join('')}</section>`;
@@ -981,7 +1047,7 @@ function htmlLec(){
       <div class="stack">${gen.map(t=>`<button class="btn pri" data-act="gen" data-t="${t}" data-n="6">Ejercicios · ${esc(nomT(t))}</button>`).join('')}
       ${mi.temas.map(t=>`<button class="btn" data-act="of-tema" data-t="${t}">Oficiales · ${esc(nomT(t))}</button>`).join('')}
       ${next?`<button class="btn ghost" data-act="lec" data-g="${next}">Siguiente módulo: ${esc(GUIAS[next].titulo.replace(/^M\d+ · /,''))} →</button>`:''}</div></section>
-      <details class="card"><summary class="muted" style="cursor:pointer;min-height:36px;display:flex;align-items:center">Leer la guía completa de este módulo</summary><article class="guia">${GUIAS[g].html}</article></details>`;
+      <details class="card"><summary class="muted" style="cursor:pointer;min-height:36px;display:flex;align-items:center">Leer la guía completa de este módulo</summary><article class="guia">${Th(GUIAS[g].html)}</article></details>`;
   }
   const ultimo=lec.i>=n-1;
   h+=`<div class="fixbar"><div class="wrap">${lec.i>0?'<button class="btn" data-act="lec-prev">← Atrás</button>':''}${ultimo?`<button class="btn pri" data-act="lec-salir">Terminar</button>`:'<button class="btn pri" data-act="lec-next">Siguiente →</button>'}</div></div>`;
@@ -997,13 +1063,13 @@ function htmlFc(){
   if(fc.fin){
     return `<div class="lec-top"><button class="btn sm ghost" data-act="fc-salir">← Aprende</button><span class="lbl">Tarjetas · resultado</span></div>
       <section class="card"><div class="count"><span class="n">${fc.ok}/${fc.ids.length}</span><span class="u">las sabías</span></div>${bar(fc.ok/fc.ids.length,'ok')}
-      ${fc.mal.length?`<span class="lbl">Para repasar</span><div class="list">${fc.mal.map(id=>{const t=L.tarjetas.find(x=>x.id===id);return `<button class="item" data-act="lec" data-g="${t.m}"><span><b>${esc(t.q)}</b><br><span class="small muted">${esc(t.a)}</span></span><span class="chip on">lección</span></button>`}).join('')}</div>`:'<p class="muted">¡Todas bien! Volverán con menos frecuencia.</p>'}
+      ${fc.mal.length?`<span class="lbl">Para repasar</span><div class="list">${fc.mal.map(id=>{const t=L.tarjetas.find(x=>x.id===id);return `<button class="item" data-act="lec" data-g="${t.m}"><span><b>${T(t.q)}</b><br><span class="small muted">${T(t.a)}</span></span><span class="chip on">lección</span></button>`}).join('')}</div>`:'<p class="muted">¡Todas bien! Volverán con menos frecuencia.</p>'}
       <button class="btn pri block" data-act="fc-ini">Otra ronda</button></section>`;
   }
   const t=L.tarjetas.find(x=>x.id===fc.ids[fc.i]);
   return `<div class="lec-top"><button class="btn sm ghost" data-act="fc-salir">← Aprende</button><span class="lbl">Tarjetas · ${fc.i+1}/${fc.ids.length}</span></div>
     <div class="segs">${fc.ids.map((_,k)=>`<i class="${k<fc.i?'done':(k===fc.i?'now':'')}"></i>`).join('')}</div>
-    <button class="flipc big ${fc.flip?'on':''}" data-act="fc-flip"><span class="in"><span class="face front"><span class="lbl">Pregunta</span><span class="fq">${esc(t.q)}</span><span class="small muted">Piensa la respuesta y toca para verla</span></span><span class="face back"><span class="lbl">Respuesta</span><span class="fq">${esc(t.a)}</span></span></span></button>
+    <button class="flipc big ${fc.flip?'on':''}" data-act="fc-flip"><span class="in"><span class="face front"><span class="lbl">Pregunta</span><span class="fq">${T(t.q)}</span><span class="small muted">Piensa la respuesta y toca para verla</span></span><span class="face back"><span class="lbl">Respuesta</span><span class="fq">${T(t.a)}</span></span></span></button>
     ${fc.flip?`<div class="fixbar"><div class="wrap"><button class="btn" data-act="fc-ko">Repasar</button><button class="btn pri" data-act="fc-ok">La sabía</button></div></div>`:''}`;
 }
 function htmlGuias(){
@@ -1024,7 +1090,7 @@ function htmlGuias(){
 }
 function htmlDoc(){
   const g=GUIAS[guia];
-  return `<div class="lec-top"><button class="btn sm ghost" data-act="guia-atras">← Aprende</button></div><article class="card guia">${g.html}</article>`;
+  return `<div class="lec-top"><button class="btn sm ghost" data-act="guia-atras">← Aprende</button></div><article class="card guia">${Th(g.html)}</article>`;
 }
 
 /* ───────── render y eventos ───────── */
@@ -1120,6 +1186,7 @@ document.addEventListener('click',ev=>{
 
 /* ───────── arranque ───────── */
 async function cargar(){
+  cargaKatex();
   try{
     const [d,e,g,lc]=await Promise.all(['datos.json','ejercicios.json','guias.json','lecciones.json'].map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(f);return r.json()})));
     D=d;GUIAS=g;L=lc;e.forEach(x=>{(POOL[x.t+'|'+x.n]=POOL[x.t+'|'+x.n]||[]).push(x)});
@@ -1147,7 +1214,7 @@ document.addEventListener('touchend',e=>{
   const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
   if(Math.abs(dx)>80&&Math.abs(dy)<45){if(dx<0&&lec.i<pasosDe(lec.g).length-1)lecIr(lec.i+1);else if(dx>0&&lec.i>0)lecIr(lec.i-1)}
 },{passive:true});
-window.__paes={merge:mergeEstados,riqueza:riqueza,estado:()=>S,sync:()=>estadoSync};   // gancho para pruebas
+window.__paes={tex:T,texh:Th,plano:texPlano,merge:mergeEstados,riqueza:riqueza,estado:()=>S,sync:()=>estadoSync};   // gancho para pruebas
 cargar();
 })();
 </script>
