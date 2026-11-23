@@ -540,7 +540,8 @@ function htmlHoy(){
     (ms>0?`<div class="big">${dias}<span>${dias===1?'día':'días'}</span></div><p class="dim">y ${horas} h · lunes 30 de noviembre · 15:00</p>`:`<p>La fecha ya pasó. Sigue practicando para la próxima.</p>`)+
     `<div class="hstats"><div><span class="lbl">Último ensayo</span><b>${ult?ult.puntaje:'—'}</b></div><div><span class="lbl">Mi meta</span><b>${m}</b></div><div><span class="lbl">Correctas meta</span><b>~${need.med}</b></div></div></section>`;
   h+=`<section class="card"><span class="lbl">Lo siguiente</span>`+
-    (pend?`<h2>${pend} por repasar</h2><p class="muted small">${nOf} preguntas oficiales y ${nCa} ejercicios de refuerzo. Tres aciertos seguidos y quedan dominados.</p><button class="btn pri block" data-act="repaso-ini">Empezar repaso</button><button class="btn block" data-act="refuerzo">Sesión de refuerzo</button>`
+    (pend?`<h2>${pend} por repasar</h2><p class="muted small">${nOf} preguntas oficiales y ${nCa} ejercicios de refuerzo. Tres aciertos seguidos y quedan dominados.</p>${htmlBtnRepaso()}<button class="btn block" data-act="refuerzo">Sesión de refuerzo</button>`
+         :leeRep()?`<h2>Repaso en curso</h2><p class="muted small">Quedaste a medias: sigue donde lo dejaste.</p>${htmlBtnRepaso()}<button class="btn block" data-act="refuerzo">Sesión de refuerzo</button>`
          :`<h2>Repasos al día</h2><p class="muted small">Aprovecha para reforzar tus puntos más débiles.</p><button class="btn pri block" data-act="refuerzo">Sesión de refuerzo</button>`)+`</section>`;
   if(plan)h+=`<section class="card"><span class="lbl">Plan de hoy · ${fmtF(hoy())}</span><h2>${esc(plan.t)}</h2><p class="muted">${esc(plan.d)}</p></section>`;
   h+=`<section class="card"><span class="lbl">Tus puntos más débiles</span>${htmlDebiles(3)}</section>`;
@@ -588,10 +589,51 @@ function elegirEj(t,sb,nivel){
   const e=lista[Math.floor(Math.random()*lista.length)];sesion.usados.add(e);return e;
 }
 function prepara(it){if(it.k==='gen'&&!it.ej)it.ej=elegirEj(it.t,it.s,it.lv||tEst(it.t).nivel)}
-function iniciarSes(items,titulo,modo){
+/* El repaso en curso se guarda en este dispositivo: si sales o recargas, "Continuar repaso" sigue donde quedaste */
+const KEYR='paesm2-repaso-v1';
+function guardaRep(){
+  const s=sesion;if(!s||!s.rep)return;
+  try{
+    if(s.fin){localStorage.removeItem(KEYR);return}
+    localStorage.setItem(KEYR,JSON.stringify({v:1,f:hoy(),titulo:s.titulo,n:s.n,i:s.i,ok:s.ok,hist:s.hist,resp:s.resp,sel:s.sel,conf:s.conf,info:s.info,subio:s.subio,refs:Array.from(s.refs),
+      entId:s.ent?s.ent[7]:null,items:s.items.map(it=>{const o=Object.assign({},it);if(it.ej)o.ej={t:it.ej.t,s:it.ej.s,n:it.ej.n,q:it.ej.q};return o})}));
+  }catch(e){}
+}
+function leeRep(){
+  try{
+    const r=JSON.parse(localStorage.getItem(KEYR)||'null');
+    if(!r||r.v!==1||!Array.isArray(r.items)||!r.items.length||r.n!==r.items.length||r.i>=r.n)return null;
+    if(r.items.some(it=>it.k==='of'&&!BQ[it.id]))return null;
+    return r;
+  }catch(e){return null}
+}
+function descartaRep(){try{localStorage.removeItem(KEYR)}catch(e){}}
+function restauraRep(){
+  const r=leeRep();if(!r){alert_('No encontré un repaso en curso.');return false}
+  const items=r.items.map(it=>{
+    if(it.k==='gen'&&it.ej){
+      const pool=POOLSUB[it.ej.t+'|'+it.ej.s+'|'+it.ej.n]||POOL[it.ej.t+'|'+it.ej.n]||[];
+      const e=pool.find(x=>x.q===it.ej.q);if(e)it.ej=e;else delete it.ej;
+    }
+    return it;
+  });
+  const cur=items[r.i];
+  if(r.resp!==null&&cur&&cur.k==='gen'&&!cur.ej){descartaRep();alert_('Ese repaso quedó desactualizado; empieza uno nuevo.');return false}
+  clearInterval(timer);
+  sesion={items,n:r.n,titulo:r.titulo,i:r.i,ok:r.ok,hist:r.hist||[],resp:r.resp,sel:r.sel,conf:r.conf,ent:null,info:r.info||'',usados:new Set(),fin:false,subio:!!r.subio,refs:new Set(r.refs||[]),modo:'',resps:{},ents:{},rep:true};
+  if(r.entId)sesion.ent=S.hist.find(h=>h[7]===r.entId)||null;
+  if(r.resp===null)prepara(items[r.i]);
+  render();return true;
+}
+function htmlBtnRepaso(){
+  const r=leeRep();
+  if(r)return `<button class="btn pri block" data-act="repaso-cont">Continuar repaso · ${r.hist.length}/${r.n}</button><button class="btn sm ghost block" data-act="repaso-nuevo">Empezar uno nuevo</button>`;
+  return `<button class="btn pri block" data-act="repaso-ini">Empezar repaso</button>`;
+}
+function iniciarSes(items,titulo,modo,rep){
   if(!items.length){alert_('No hay nada disponible por ahora.');return}
   clearInterval(timer);
-  sesion={items,n:items.length,titulo,i:0,ok:0,hist:[],resp:null,sel:null,conf:null,ent:null,info:'',usados:new Set(),fin:false,subio:false,refs:new Set(),modo:modo||'',resps:{},ents:{}};
+  sesion={items,n:items.length,titulo,i:0,ok:0,hist:[],resp:null,sel:null,conf:null,ent:null,info:'',usados:new Set(),fin:false,subio:false,refs:new Set(),modo:modo||'',resps:{},ents:{},rep:!!rep};
   if(modo==='prueba'){items.forEach(prepara);sesion.t0=Date.now();sesion.limite=items.length*150000;arrancaCrono()}else prepara(items[0]);
   render();
 }
@@ -675,7 +717,7 @@ function htmlSesion(){
     const refs=Array.from(s.refs).map(k=>{const a=k.split('|');return etS(a[0],a[1])});
     return `<section class="card"><span class="lbl">${esc(s.titulo)} · resultado</span><div class="count"><span class="n">${s.ok}/${s.n}</span></div>${bar(s.n?s.ok/s.n:0)}
       ${refs.length?`<div class="fb neu"><b>Volverán mañana para reforzarse</b><span class="why">${esc(refs.join(' · '))}</span></div>`:''}
-      <button class="btn pri block" data-act="otra">Otra serie</button><button class="btn block" data-act="salir">Volver</button></section>`;
+      ${s.rep?`<p class="muted small">Repaso completado. Cuando quieras, te preparo el siguiente.</p><button class="btn pri block" data-act="repaso-ini">Siguiente repaso</button>`:'<button class="btn pri block" data-act="otra">Otra serie</button>'}<button class="btn block" data-act="salir">Volver</button></section>`;
   }
   const it=s.items[s.i],r=s.resp,resp=r!==null,prueba=s.modo==='prueba';
   const pips=s.items.map((_,k)=>`<i class="${prueba?(k<s.i?'ok':(k===s.i?'now':'')):(k<s.hist.length?s.hist[k]:(k===s.i?'now':''))}"></i>`).join('');
@@ -795,7 +837,7 @@ function htmlRepaso(){
   let h=`<h1>Repaso de errores</h1><p class="muted">Cada error vuelve a +1, +3 y +7 días. Cada error vuelve con otra pregunta oficial del mismo contenido, de otras pruebas del DEMRE (cámbialo en Progreso → Ajustes). Si hay pocos repasos, se completa con tus subtemas más débiles. Tres aciertos seguidos = dominado.</p>`;
   h+=`<section class="card"><span class="lbl">Hoy</span><h2>${po.length+pc.length} por repasar</h2>
     <div class="chips"><span class="chip">${po.length} preguntas oficiales</span><span class="chip">${pc.length} ejercicios de refuerzo</span></div>
-    ${po.length+pc.length?`<button class="btn pri block" data-act="repaso-ini">Empezar repaso</button>`:'<p class="muted small">Nada pendiente. Vuelve mañana o refuerza tus puntos débiles.</p>'}
+    ${po.length+pc.length||leeRep()?htmlBtnRepaso():'<p class="muted small">Nada pendiente. Vuelve mañana o refuerza tus puntos débiles.</p>'}
     <div class="chips"><span class="chip ok">${dom+cdom} dominados</span><span class="chip">${ids.length+cs.length} en total</span></div></section>`;
   h+=`<section class="card"><span class="lbl">Tus puntos más débiles</span>${htmlDebiles(4)}<button class="btn block" data-act="refuerzo">Sesión de refuerzo</button></section>`;
   if(prox.length)h+=`<section class="card"><span class="lbl">Próximos repasos</span><div class="list">${prox.slice(0,8).map(x=>`<div class="item"><span><b>${esc(x.t)}</b><br><span class="small muted">${esc(x.d)}</span></span><span class="chip">${fmtF(x.f)}</span></div>`).join('')}</div></section>`;
@@ -1098,7 +1140,7 @@ function render(keep){
   const m=$('#main');
   if(!D)return;
   let h;
-  if(sesion)h=htmlSesion();
+  if(sesion){guardaRep();h=htmlSesion()}
   else if(ens)h=ens.res?htmlEnsayoRes():htmlEnsayo();
   else if(lec)h=htmlLec();
   else if(fc)h=htmlFc();
@@ -1122,7 +1164,8 @@ document.addEventListener('click',ev=>{
     case 'gen':iniciarSes(itemsGen(d.t.split(','),+d.n||6,d.lv?+d.lv:0),'Ejercicios');break;
     case 'refuerzo':iniciarSes(itemsRefuerzo(9),'Refuerzo de puntos débiles');break;
     case 'sub':reforzarSub(d.k);break;
-    case 'repaso-ini':iniciarSes(itemsRepaso(),'Repaso');break;
+    case 'repaso-ini':case 'repaso-nuevo':descartaRep();iniciarSes(itemsRepaso(),'Repaso','',true);break;
+    case 'repaso-cont':restauraRep();break;
     case 'of-tema':ofTema(d.t);break;
     case 'otra':{const t=sesion.titulo;if(sesion.modo==='prueba')iniciarSes(itemsPrueba(sesion.n),'Mini-ensayo','prueba');else if(t.startsWith('Refuerzo de'))iniciarSes(itemsRefuerzo(9),t);else if(sesion.items.every(x=>x.k==='gen'))iniciarSes(sesion.items.map(x=>({k:'gen',t:x.t,s:x.s,lv:x.lv})),t);else render();break}
     case 'salir':cerrarSes();break;
