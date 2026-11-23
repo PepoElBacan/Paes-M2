@@ -25,6 +25,7 @@ from sistema import generadores as G  # noqa: E402
 from sistema.taxonomia import TEMAS  # noqa: E402
 from lecciones import LECCIONES, TARJETAS  # noqa: E402
 from mate_tex import convertir  # noqa: E402
+from paginas_pdf import continua  # noqa: E402
 
 WEB = RAIZ / "web"
 POR_NIVEL = 22     # ejercicios únicos por (generador, nivel)
@@ -203,8 +204,11 @@ def main():
 
     banco = []
     for q in B.cargar():
-        banco.append({"i": q["id"], "p": q["prueba"], "n": q["n"], "t": q["tema"], "s": q["subtema"], "d": q["descripcion"],
-                      "k": q["clave"], "pl": q["piloto"], "el": q["eliminada"], "g": q["pagina_pdf"], "u": q["suficiencia"]})
+        reg = {"i": q["id"], "p": q["prueba"], "n": q["n"], "t": q["tema"], "s": q["subtema"], "d": q["descripcion"],
+               "k": q["clave"], "pl": q["piloto"], "el": q["eliminada"], "g": q["pagina_pdf"], "u": q["suficiencia"]}
+        if continua(q["prueba"], q["pagina_pdf"]):
+            reg["g2"] = q["pagina_pdf"] + 1          # la pregunta puede continuar en la página siguiente (imagen extra para Claude)
+        banco.append(reg)
     pruebas = {pid: {"etq": et, "tipo": tipo, "pdf": pdf}
                for pid, (pdf, clav, et, tipo) in PRUEBAS.items()}
     semilla = json.loads((RAIZ / "progreso" / "estado.json").read_text())

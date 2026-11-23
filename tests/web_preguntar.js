@@ -14,7 +14,7 @@ const ok = (c, m) => { console.log((c ? '  ✓ ' : '  ✗ ') + m); if (!c) fallo
     if (!localStorage.getItem('paesm2-estado-v1')) localStorage.setItem('paesm2-estado-v1', JSON.stringify(e));
     window.__llamadas = [];
     const sample = async (input, opts) => {
-      window.__llamadas.push({ input: JSON.parse(JSON.stringify(input)), opts: Object.keys(opts || {}) });
+      window.__llamadas.push({ input: JSON.parse(JSON.stringify(input)), opts: Object.keys(opts || {}), nimg: opts && opts.images ? [].concat(opts.images).length : 0, tipo: opts && opts.images ? [].concat(opts.images)[0].type : '' });
       const txt = window.__fallar ? null : 'Piensa en el **vértice**: $x_v=-\\dfrac{b}{2a}$. Cuesta \\$100.';
       if (window.__fallar) throw { code: 'rate_limited', message: 'x' };
       if (opts && opts.onText) { await new Promise(r => setTimeout(r, 50)); opts.onText({ text: txt.slice(0, 20), delta: txt.slice(0, 20) }); await new Promise(r => setTimeout(r, 50)); opts.onText({ text: txt, delta: txt.slice(20) }); }
@@ -94,6 +94,29 @@ const ok = (c, m) => { console.log((c ? '  ✓ ' : '  ✗ ') + m); if (!c) fallo
   await p.waitForTimeout(400);
   await p.screenshot({ path: os.tmpdir() + '/ask.png' });
   await p.click('.ask-head [data-act=ask-x]');
+  // pregunta oficial: Claude recibe la página del PDF sin que subas nada
+  for (let i = 0; i < 14; i++) {
+    const k = await p.evaluate(() => (window.__paes.ask() || {}).key || '');
+    if (k.startsWith('o|')) break;
+    if (await p.$('[data-act=sig]')) await p.click('[data-act=sig]');
+    else if (await p.$('[data-act=resp]')) await p.click('[data-act=resp]');
+    else await p.click('[data-act=resp-of][data-l=A]');
+    if (await p.$('[data-act=conf][data-c="1"]')) await p.click('[data-act=conf][data-c="1"]');
+  }
+  const esOf = await p.evaluate(() => ((window.__paes.ask() || {}).key || '').startsWith('o|'));
+  ok(esOf, 'llegué a una pregunta oficial');
+  if (esOf) {
+    const antes = await p.evaluate(() => window.__llamadas.length);
+    await p.click('[data-act=ask]');
+    ok(!(await p.isVisible('#ask-imgbtn')), 'no pide foto: el botón Foto no es necesario');
+    await p.fill('#ask-txt', 'ayúdame con esta');
+    await p.click('#ask-send');
+    await p.waitForFunction((n) => window.__llamadas.length > n, antes);
+    const l = await p.evaluate(() => window.__llamadas.at(-1));
+    ok(l.nimg >= 1 && l.tipo === 'image/jpeg', 'adjunta la página del PDF como imagen (' + l.nimg + ' img)');
+    ok(/Se adjunta/.test(l.input[0].content) && !/NO están disponibles/.test(l.input[0].content), 'el contexto le dice que la página va adjunta');
+    await p.click('.ask-head [data-act=ask-x]');
+  }
   ok(errs.length === 0, 'sin errores de JavaScript ' + JSON.stringify(errs));
   await b.close();
   console.log(fallos ? fallos + ' fallidas' : 'todo bien');

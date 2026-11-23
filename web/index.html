@@ -222,6 +222,7 @@ body .katex .katex-html{white-space:normal}
 .mxp{font-family:var(--mono,monospace);font-size:.94em}
 
 /* Preguntarle a Claude */
+[hidden]{display:none!important}
 #ask{position:fixed;inset:0;z-index:100} #ask[hidden]{display:none}
 .ask-bg{position:absolute;inset:0;background:rgba(10,14,18,.45)}
 .ask-sheet{position:absolute;left:0;right:0;bottom:var(--kb,0px);height:min(calc(var(--vvh,100dvh)*.9),780px);max-width:640px;margin:0 auto;background:var(--bg);border-radius:22px 22px 0 0;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,.28);animation:askup .25s ease both}
@@ -1291,7 +1292,7 @@ document.addEventListener('touchend',e=>{
 },{passive:true});
 
 /* ───────── Preguntarle a Claude (sobre la pregunta actual) ───────── */
-let SAMP=null,sampLim=null,askAbierto=false,askBusy=false,askCtl=null,askImg=null,askErr='';
+let SAMP=null,sampLim=null,askAbierto=false,askBusy=false,askCtl=null,askImg=null,askErr='',askSinPag=false;
 const askHist=new Map();
 async function iniciaAsk(){
   try{
@@ -1315,9 +1316,9 @@ function ctxAsk(){
     if(it.k==='gen'&&it.ej){const e=it.ej,r=s.resp;
       return {key:'g|'+e.q,titulo:`${etS(e.t,e.s)} · ejercicio`,texto:ctxGen(e,r),foto:false,sug:r===null?SUG0:(r===e.c?SUGOK:SUGX)}}
     if(it.k==='of'&&BQ[it.id]){const q=BQ[it.id],r=s.resp;
-      let t=`Pregunta oficial del DEMRE (PAES M2): ${q.p}, pregunta ${q.n}${q.pl?' (pregunta piloto: no puntúa)':''}. Tema: ${nomT(q.t)}${q.s==='general'?'':'; subtema: '+nomS(q.s)}. Descripción: ${q.d}.\nEl enunciado y las alternativas NO están en la app (están en el PDF oficial). Si el estudiante no los escribe o adjunta una foto, pídeselos.`;
+      let t=`Pregunta oficial del DEMRE (PAES M2): ${q.p}, pregunta ${q.n}${q.pl?' (pregunta piloto: no puntúa)':''}. Tema: ${nomT(q.t)}${q.s==='general'?'':'; subtema: '+nomS(q.s)}. Descripción: ${q.d}.`;
       if(r!==null)t+=`\nEl estudiante marcó la ${r}; la clave oficial es la ${q.k}.`;else t+='\nEl estudiante AÚN NO responde esta pregunta.';
-      return {key:'o|'+q.i,titulo:`${q.p} · pregunta ${q.n}`,texto:t,foto:true,sug:r===null?SUG0:(r===q.k?SUGOK:SUGX)}}
+      return {key:'o|'+q.i,of:q,titulo:`${q.p} · pregunta ${q.n}`,texto:t,foto:true,sug:r===null?SUG0:(r===q.k?SUGOK:SUGX)}}
     return null;
   }
   if(lec){
@@ -1332,6 +1333,19 @@ function ctxAsk(){
     return {key:'ls|'+lec.g+'|'+lec.i,titulo:`${GUIAS[lec.g].titulo.replace(/^M\d+ · /,'')} · ${p.titulo||''}`,texto:t,foto:false,sug:['Explícamelo más simple','Dame otro ejemplo','¿Cuándo se usa esto?']};
   }
   return null;
+}
+const PAGC=new Map();
+const pad2=n=>String(n).padStart(2,'0');
+async function paginasOf(q){
+  const urls=[`paginas/${q.p}_${pad2(q.g)}.jpg`];if(q.g2)urls.push(`paginas/${q.p}_${pad2(q.g2)}.jpg`);
+  const out=[];
+  for(const u of urls){
+    try{
+      if(!PAGC.has(u)){const r=await fetch(u);if(!r.ok)throw new Error(u);const b=await r.blob();PAGC.set(u,new File([b],u.split('/').pop(),{type:'image/jpeg'}))}
+      out.push(PAGC.get(u));
+    }catch(e){if(out.length===0)return []}
+  }
+  return out;
 }
 function mdLite(s){
   s=String(s).replace(/\$\$/g,'$').replace(/\\[()]/g,'$').replace(/\\[\[\]]/g,'$');
@@ -1348,7 +1362,7 @@ function mdLite(s){
 function pintaAsk(parcial){
   const c=ctxAsk(),h=c?(askHist.get(c.key)||[]):[],box=$('#ask-msgs');if(!box)return;
   let x='';
-  if(!h.length&&parcial===undefined)x='<p class="ask-hint">Pregúntame lo que no entiendas de esta pregunta. Si aún no la respondes, te doy pistas sin darte la respuesta.'+(c&&c.foto?' Esta es una pregunta oficial y su enunciado está en el PDF: <b>toma una foto o captura</b> y adjúntala con el botón Foto, o escribe lo que dice.':'')+'</p>';
+  if(!h.length&&parcial===undefined)x='<p class="ask-hint">Pregúntame lo que no entiendas de esta pregunta. Si aún no la respondes, te doy pistas sin darte la respuesta.'+(c&&c.of?(sampLim&&sampLim.images&&!askSinPag?' Leo el enunciado directamente del PDF oficial.':' Esta es una pregunta oficial y no pude cargar su enunciado: <b>toma una foto o captura</b> y adjúntala con el botón Foto, o escribe lo que dice.'):'')+'</p>';
   x+=h.map(m=>m.role==='user'?`<div class="am-u">${esc(m.content)}</div>`:`<div class="am-a">${mdLite(m.content)}</div>`).join('');
   if(parcial!==undefined&&parcial!==null)x+=`<div class="am-a">${parcial?mdLite(parcial):'<span class="ask-hint">Pensando…</span>'}</div>`;
   if(askErr)x+=`<div class="am-e">${esc(askErr)}</div>`;
@@ -1367,7 +1381,7 @@ function abreAsk(){
   if(!c){alert_(sesion&&sesion.modo==='prueba'?'Durante el mini-ensayo no se puede preguntar.':'Abre una pregunta para consultarla con Claude.');return}
   askAbierto=true;askErr='';askImg=null;
   $('#ask-ctx').textContent=c.titulo;
-  $('#ask-imgbtn').hidden=!(sampLim&&sampLim.images&&c.foto);
+  askSinPag=false;$('#ask-imgbtn').hidden=!(sampLim&&sampLim.images&&c.foto&&!c.of);
   pintaImg();pintaAsk();
   $('#ask').hidden=false;document.body.style.overflow='hidden';
   ajustaAsk();
@@ -1391,9 +1405,18 @@ async function askEnviar(txt){
   askErr='';askBusy=true;askCtl=new AbortController();
   const ta=$('#ask-txt');if(ta)ta.value='';
   pintaAsk('');
-  const input=[{role:'user',content:ASK_REGLAS+'\n\nCONTEXTO DE LA PREGUNTA QUE TIENE EL ESTUDIANTE EN PANTALLA:\n'+c.texto}].concat(h.slice(-12));
+  const maxN=(sampLim&&sampLim.images&&sampLim.images.maxCount)||1;
+  let pags=[];
+  if(c.of&&sampLim&&sampLim.images){pags=await paginasOf(c.of);pags=pags.slice(0,Math.max(1,maxN-(img?1:0)));if(!pags.length&&askAbierto){askSinPag=true;const b=$('#ask-imgbtn');if(b)b.hidden=false}}
+  let texto=c.texto;
+  if(c.of){
+    texto+=pags.length?`\nSe adjunta${pags.length>1?'n las imágenes de las páginas':' la imagen de la página'} del PDF oficial donde está la pregunta ${c.of.n} de ${c.of.p}. Ubícala por su número y trabaja con ella (la página puede mostrar partes de otras preguntas: ignóralas). Lee bien el enunciado, los datos y las alternativas antes de responder.${img?' También se adjunta una foto del estudiante.':''}`
+      :'\nEl enunciado y las alternativas NO están disponibles en la app. Si el estudiante no los escribe o adjunta una foto, pídeselos y no los inventes.';
+  }
+  const input=[{role:'user',content:ASK_REGLAS+'\n\nCONTEXTO DE LA PREGUNTA QUE TIENE EL ESTUDIANTE EN PANTALLA:\n'+texto}].concat(h.slice(-12));
   const opts={cache:false,signal:askCtl.signal,onText:({text})=>{if(askAbierto)pintaAsk(text)}};
-  if(img)opts.images=img;
+  const todas=pags.concat(img?[img]:[]);
+  if(todas.length)opts.images=todas.length===1?todas[0]:todas;
   try{
     const r=await SAMP(input,opts);
     h.push({role:'assistant',content:r.text+(r.truncated?'\n\n(respuesta cortada: pídeme que continúe)':'')});

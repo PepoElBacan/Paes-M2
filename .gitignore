@@ -3,3 +3,5 @@ pruebas/
 __pycache__/
 *.pyc
 .DS_Store
+# Páginas del PDF del DEMRE renderizadas para la app (scripts/renderizar_paginas.py): material con derechos reservados
+web/paginas/
