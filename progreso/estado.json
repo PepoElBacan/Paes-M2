@@ -1,4 +1,6 @@
 {
+ "cartas": {},
+ "dias": {},
  "ensayos": [
   {
    "correctas": 31,
@@ -84,6 +86,151 @@
    "prueba": "I2026",
    "puntaje": 640,
    "puntuables": 49
+  },
+  {
+   "correctas": 35,
+   "fecha": "2026-11-24",
+   "por_tema": {
+    "ALG-cua": [
+     3,
+     3
+    ],
+    "ALG-exp": [
+     2,
+     2
+    ],
+    "ALG-expr": [
+     1,
+     1
+    ],
+    "ALG-func": [
+     5,
+     5
+    ],
+    "ALG-lin": [
+     2,
+     2
+    ],
+    "ALG-prop": [
+     2,
+     4
+    ],
+    "ALG-sis": [
+     2,
+     3
+    ],
+    "GEO-area": [
+     2,
+     2
+    ],
+    "GEO-circ": [
+     1,
+     2
+    ],
+    "GEO-iso": [
+     0,
+     1
+    ],
+    "GEO-trig": [
+     2,
+     2
+    ],
+    "GEO-vec": [
+     1,
+     1
+    ],
+    "NUM-log": [
+     1,
+     1
+    ],
+    "NUM-por": [
+     3,
+     5
+    ],
+    "NUM-pot": [
+     2,
+     2
+    ],
+    "NUM-real": [
+     1,
+     2
+    ],
+    "PYE-con": [
+     2,
+     2
+    ],
+    "PYE-dis": [
+     3,
+     5
+    ],
+    "PYE-pro": [
+     0,
+     2
+    ],
+    "PYE-var": [
+     0,
+     2
+    ]
+   },
+   "prueba": "I2027",
+   "puntaje": 687,
+   "puntuables": 49,
+   "resp": {
+    "1": "B",
+    "10": "D",
+    "11": "D",
+    "12": "C",
+    "13": "B",
+    "14": "D",
+    "15": "D",
+    "16": "C",
+    "17": "C",
+    "18": "A",
+    "19": "D",
+    "2": "D",
+    "20": "C",
+    "21": "B",
+    "22": "A",
+    "23": "A",
+    "24": "C",
+    "25": "C",
+    "26": "A",
+    "27": "D",
+    "28": "C",
+    "29": "B",
+    "3": "B",
+    "30": "D",
+    "31": "D",
+    "32": "B",
+    "33": "C",
+    "34": "D",
+    "35": "C",
+    "36": "D",
+    "37": "C",
+    "38": "A",
+    "39": "B",
+    "4": "B",
+    "41": "D",
+    "42": "A",
+    "43": "C",
+    "44": "D",
+    "45": "A",
+    "46": "A",
+    "47": "B",
+    "48": "B",
+    "49": "C",
+    "5": "A",
+    "50": "B",
+    "51": "A",
+    "52": "A",
+    "53": "A",
+    "54": "D",
+    "55": "C",
+    "6": "D",
+    "7": "D",
+    "8": "C",
+    "9": "C"
+   }
   }
  ],
  "errores": {
@@ -278,9 +425,156 @@
    "proximo": "2026-11-21",
    "racha": 0,
    "ultimo": null
+  },
+  "I2027-01": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-04": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-08": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-15": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-16": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-21": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-23": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-29": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-34": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-35": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-37": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-42": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-46": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-47": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-48": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-51": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-53": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
+  },
+  "I2027-55": {
+   "dominada": false,
+   "intentos": 0,
+   "nota": "ensayo I2027",
+   "proximo": "2026-11-25",
+   "racha": 0,
+   "ultimo": null
   }
  },
+ "hist": [],
  "hojas": {},
+ "oficiales": {},
+ "sub": {},
  "temas": {},
  "version": 1
 }

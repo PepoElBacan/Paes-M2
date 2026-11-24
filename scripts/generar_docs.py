@@ -84,6 +84,60 @@ def mapa():
     print("docs/mapa_gemelas.md generado")
 
 
+def segundo_ensayo(est1, pesos, cont):
+    """Sección del ensayo I2027 (si existe datos/respuestas_ensayo_I2027.csv): resultado, comparación por tema y errores"""
+    ruta = RAIZ / "datos" / "respuestas_ensayo_I2027.csv"
+    if not ruta.exists():
+        return []
+    tabla_p = json.loads((RAIZ / "datos" / "tabla_puntaje.json").read_text())["I2027"]
+    est2, fal, sin_ent = {}, [], []
+    for r in csv.DictReader(open(ruta)):
+        q = POR_ID[f"I2027-{int(r['n']):02d}"]
+        if q["eliminada"] or not r["correcta"]:
+            continue
+        ok = r["marcada"] == r["correcta"]
+        if not q["piloto"]:
+            a, n = est2.setdefault(q["tema"], [0, 0])
+            est2[q["tema"]] = [a + ok, n + 1]
+        if not ok:
+            fal.append((q, r["marcada"]))
+            if r["entendi_el_error"] == "0":
+                sin_ent.append(q["n"])
+    punt = sum(n for _, n in est2.values())
+    ac = sum(a for a, _ in est2.values())
+    ac1 = sum(a for a, _ in est1.values())
+    p1 = json.loads((RAIZ / "datos" / "tabla_puntaje.json").read_text())["I2026"][str(ac1)]
+    L = ["", "---", "", "# Segundo ensayo: I2027 (24 nov)", "",
+         f"**Resultado:** {ac} correctas de {punt} puntuables ⇒ **{tabla_p[str(ac)]} puntos PAES** "
+         f"(antes: {ac1} correctas ⇒ {p1}; **+{tabla_p[str(ac)] - p1} pts**, +{ac - ac1} preguntas).", "",
+         "## Comparación por tema (ensayo 1 → ensayo 2)", "",
+         "| Tema | I2026 | I2027 | Cambio |", "|---|---|---|---|"]
+    temas = sorted(set(est1) | set(est2), key=lambda t: -(50 * pesos.get(t, 0)))
+    for t in temas:
+        a1, n1 = est1.get(t, [0, 0])
+        a2, n2 = est2.get(t, [0, 0])
+        if n1 and n2:
+            d = a2 / n2 - a1 / n1
+            cambio = "mejora" if d > .2 else ("empeora" if d < -.2 else "igual")
+        else:
+            cambio = "sin dato" if not (n1 and n2) else ""
+        L.append(f"| {t} {TEMAS[t][0]} | {f'{a1}/{n1}' if n1 else '–'} | {f'{a2}/{n2}' if n2 else '–'} | {cambio} |")
+    L += ["", "## Errores del ensayo (ya están en tu banco de errores)", "",
+          "| P | Marcaste | Clave | Tema | Qué era | ¿Lo entendí? |", "|---|---|---|---|---|---|"]
+    for q, m in fal:
+        ent = {"0": "no", "1": "sí"}.get(next(r["entendi_el_error"] for r in csv.DictReader(open(ruta)) if int(r["n"]) == q["n"]), "")
+        L.append(f"| P{q['n']}{' (piloto)' if q['piloto'] else ''} | {m} | {q['clave']} | {q['tema']} | {q['descripcion']} | {ent} |")
+    L += ["", "## Qué muestra este ensayo", "",
+          f"1. **La cuadrática ya no es el problema:** pasó de 0/4 a 3/3. El trabajo de refuerzo funcionó.",
+          f"2. **Probabilidades y variable aleatoria** (PYE-pro, PYE-var): 0/4 en conjunto (probabilidad geométrica, probabilidad total, muestreo/inferencia, éxito de un proceso). Es la mayor pérdida ahora.",
+          f"3. **Homotecia** (GEO-iso): fallaste P35 y también el piloto P34, las dos sobre homotecia entre triángulos. No es un tema nuevo para ti: ya tenías errores de isometrías en el ensayo anterior (rotación, vectores).",
+          f"4. **Porcentajes y proporcionalidad en contexto** (P4, P8, P16, P21): cuatro errores en problemas con tablas o situaciones reales; de ellos entendiste P4 y P21 y no P8 y P16.",
+          f"5. **No entendiste {len(sin_ent)} de {len(fal)} errores** (P{', P'.join(map(str, sin_ent))}): son los que más conviene volver a ver con una explicación, no solo repetir.",
+          f"6. **{sum(1 for q, _ in fal if q['piloto'])} de tus {len(fal)} errores fueron en preguntas piloto**: no cuentan para el puntaje.",
+          f"7. Cada pregunta extra vale unos 13–15 puntos en este tramo: 40 correctas ⇒ {tabla_p['40']} pts (+5 que hoy) y 42 ⇒ {tabla_p['42']} pts. Probabilidades (4 errores), homotecia y porcentajes con tablas son justo esas preguntas.", ""]
+    return L
+
+
 def diagnostico():
     tabla_p = json.loads((RAIZ / "datos" / "tabla_puntaje.json").read_text())["I2026"]
     pesos, cont = B.pesos(BANCO)
@@ -121,6 +175,7 @@ def diagnostico():
           "4. **Dos aciertos \"sin método\"** (P42, P52): aprovéchalos como repaso igual; en el día de la prueba no se puede depender del azar.",
           "5. Los 5 **pilotos no puntúan** (P27, 34, 50, 54, 55 en tu prueba): errores en pilotos no cuestan puntos — no te angusties por ellos.",
           "6. Te sobraron **23 min 21 s**: úsalos de forma sistemática para revisar signos/etiquetas en el último tercio de la prueba.", ""]
+    L += segundo_ensayo(est, pesos, cont)
     (RAIZ / "docs").mkdir(exist_ok=True)
     (RAIZ / "docs" / "diagnostico.md").write_text("\n".join(L))
     print("docs/diagnostico.md generado")
